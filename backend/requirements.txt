@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+opencv-python
+ultralytics
+scikit-learn
+numpy
+pyttsx3
+SpeechRecognition
+pyaudio
+twilio
+qrcode[pil]
+python-dotenv
+requests

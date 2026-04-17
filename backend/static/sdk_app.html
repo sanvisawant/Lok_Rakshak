@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Lok-Rakshak | Suraksha Citizen App</title>
+  <meta name="description" content="Railway Safety Citizen App — Report crowd risks and rumors in real time." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --green:    #22c55e;
+      --yellow:   #eab308;
+      --red:      #ef4444;
+      --critical: #dc2626;
+      --bg:       #0a0f1e;
+      --surface:  #111827;
+      --border:   #1f2d45;
+      --text:     #e2e8f0;
+      --muted:    #64748b;
+      --accent:   #38bdf8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      overflow-x: hidden;
+    }
+
+    /* ── Header ────────────────────────────────────────── */
+    .header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 20px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .header-brand { display: flex; align-items: center; gap: 10px; }
+    .header-logo  { width: 34px; height: 34px; background: var(--accent); border-radius: 8px;
+                    display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .header-title { font-size: 15px; font-weight: 800; letter-spacing: 0.04em; color: var(--accent); }
+    .header-sub   { font-size: 9px;  color: var(--muted); letter-spacing: 0.12em; margin-top: 1px; }
+
+    /* ── Status Badge ───────────────────────────────────── */
+    .status-badge {
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      border: 1.5px solid;
+      transition: all 0.4s;
+    }
+    .status-GREEN    { background: rgba(34,197,94,0.15);  color: var(--green);  border-color: var(--green);  }
+    .status-YELLOW   { background: rgba(234,179,8,0.15);   color: var(--yellow); border-color: var(--yellow); }
+    .status-RED      { background: rgba(239,68,68,0.15);   color: var(--red);    border-color: var(--red); animation: badgePulse 1s infinite; }
+    .status-CRITICAL { background: rgba(220,38,38,0.3);    color: #fff;          border-color: var(--critical); animation: badgePulse 0.6s infinite; }
+
+    @keyframes badgePulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+    /* ── Main Content ───────────────────────────────────── */
+    .content { padding: 20px 16px 100px; max-width: 480px; margin: 0 auto; }
+
+    /* ── Alert Banner (shows on RED/CRITICAL) ──────────── */
+    .alert-banner {
+      display: none;
+      background: linear-gradient(135deg, #7f1d1d, #991b1b);
+      border: 1.5px solid var(--red);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 20px;
+      animation: shakeAlert 0.5s;
+    }
+    .alert-banner.show { display: block; }
+    .alert-banner-title { font-size: 11px; font-weight: 700; letter-spacing: 0.15em; color: #fca5a5; margin-bottom: 4px; }
+    .alert-banner-msg   { font-size: 14px; font-weight: 800; color: #fff; line-height: 1.4; }
+    @keyframes shakeAlert {
+      0%,100% { transform: translateX(0); }
+      20%     { transform: translateX(-6px); }
+      40%     { transform: translateX(6px); }
+      60%     { transform: translateX(-4px); }
+      80%     { transform: translateX(4px); }
+    }
+
+    /* ── Section cards ──────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .card-title {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-title::before { content: ''; width: 3px; height: 14px; background: var(--accent); border-radius: 99px; }
+
+    /* ── SOS Button ─────────────────────────────────────── */
+    .sos-btn {
+      width: 100%;
+      padding: 22px;
+      background: linear-gradient(135deg, #b91c1c, #dc2626);
+      border: none;
+      border-radius: 16px;
+      color: #fff;
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: 0.2em;
+      cursor: pointer;
+      box-shadow: 0 0 30px rgba(220,38,38,0.5);
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+    .sos-btn:active { transform: scale(0.96); box-shadow: 0 0 10px rgba(220,38,38,0.3); }
+    .sos-btn:disabled { opacity: 0.6; transform: none; }
+    .sos-btn .sos-icon { font-size: 28px; }
+    .sos-subtitle { font-size: 10px; font-weight: 600; opacity: 0.75; letter-spacing: 0.1em; display: block; }
+    .sos-ripple {
+      position: absolute; width: 0; height: 0;
+      border-radius: 50%; background: rgba(255,255,255,0.3);
+      transform: translate(-50%,-50%);
+      animation: ripple 0.6s linear;
+      pointer-events: none;
+    }
+    @keyframes ripple { to { width: 300px; height: 300px; opacity: 0; } }
+
+    /* ── Crowd Level Slider ─────────────────────────────── */
+    .slider-track { width: 100%; -webkit-appearance: none; appearance: none; height: 8px; background: var(--border); border-radius: 99px; outline: none; }
+    .slider-track::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 26px; height: 26px;
+      border-radius: 50%; background: var(--accent);
+      box-shadow: 0 0 10px rgba(56,189,248,0.6); cursor: pointer;
+    }
+    .slider-label { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-top: 8px; }
+    .crowd-value { font-size: 28px; font-weight: 900; color: var(--accent); text-align: center; margin: 10px 0 4px; }
+    .crowd-desc  { font-size: 11px; color: var(--muted); text-align: center; margin-bottom: 12px; }
+
+    /* ── Rumor Form ─────────────────────────────────────── */
+    .rumor-textarea {
+      width: 100%; min-height: 80px;
+      background: rgba(255,255,255,0.04); border: 1.5px solid var(--border);
+      border-radius: 12px; padding: 12px; color: var(--text);
+      font-size: 14px; font-family: inherit; resize: vertical;
+      transition: border-color 0.2s;
+    }
+    .rumor-textarea:focus { outline: none; border-color: var(--accent); }
+    .rumor-result {
+      display: none; margin-top: 12px; padding: 12px;
+      border-radius: 12px; font-size: 12px; line-height: 1.5;
+    }
+    .rumor-result.show { display: block; }
+    .rumor-result.safe     { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); color: var(--green); }
+    .rumor-result.threat   { background: rgba(239,68,68,0.1);  border: 1px solid rgba(239,68,68,0.3);  color: var(--red);   }
+    .rumor-result.warning  { background: rgba(234,179,8,0.1);  border: 1px solid rgba(234,179,8,0.3);  color: var(--yellow);}
+
+    /* ── Submit Button ──────────────────────────────────── */
+    .submit-btn {
+      width: 100%; padding: 14px; margin-top: 10px;
+      background: var(--accent); color: #0a0f1e;
+      border: none; border-radius: 12px;
+      font-size: 12px; font-weight: 800; letter-spacing: 0.15em;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .submit-btn:active    { transform: scale(0.97); }
+    .submit-btn:disabled  { opacity: 0.6; cursor: not-allowed; }
+    .submit-btn.secondary {
+      background: transparent; color: var(--accent);
+      border: 1.5px solid var(--accent);
+    }
+
+    /* ── Toast ──────────────────────────────────────────── */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: #1e293b; border: 1px solid var(--border); border-radius: 12px;
+      padding: 12px 24px; font-size: 13px; font-weight: 600; z-index: 99;
+      opacity: 0; transition: opacity 0.3s; white-space: nowrap;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    }
+    .toast.show { opacity: 1; }
+    .toast.success { border-color: var(--green); color: var(--green); }
+    .toast.error   { border-color: var(--red);   color: var(--red);   }
+
+    /* ── Footer ─────────────────────────────────────────── */
+    .footer {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: var(--surface); border-top: 1px solid var(--border);
+      padding: 10px 16px 20px; text-align: center;
+      font-size: 10px; color: var(--muted); letter-spacing: 0.1em;
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-brand">
+    <div class="header-logo">🛡️</div>
+    <div>
+      <div class="header-title">LOK-RAKSHAK</div>
+      <div class="header-sub">SURAKSHA CITIZEN PORTAL</div>
+    </div>
+  </div>
+  <div class="status-badge status-GREEN" id="statusBadge">● GREEN</div>
+</header>
+
+<div class="content">
+
+  <!-- ALERT BANNER (auto-shows on RED/CRITICAL) -->
+  <div class="alert-banner" id="alertBanner">
+    <div class="alert-banner-title">⚠️ RAILWAY SAFETY ALERT</div>
+    <div class="alert-banner-msg" id="alertBannerMsg">Stay calm. Follow staff directions.</div>
+  </div>
+
+  <!-- SOS CARD -->
+  <div class="card">
+    <div class="card-title">Emergency SOS</div>
+    <button class="sos-btn" id="sosBtn" onclick="triggerSOS(event)">
+      <span class="sos-icon">🆘</span>
+      <div>
+        <div>TAP FOR SOS</div>
+        <span class="sos-subtitle">Immediate RPF Alert + NDMA Protocol</span>
+      </div>
+    </button>
+    <p id="sosStatus" style="text-align:center;font-size:11px;color:var(--muted);margin-top:10px;min-height:16px;"></p>
+  </div>
+
+  <!-- CROWD LEVEL REPORT -->
+  <div class="card">
+    <div class="card-title">Report Crowd Level</div>
+    <div class="crowd-value" id="crowdValue">50</div>
+    <div class="crowd-desc" id="crowdDesc">Moderate — Platform manageable</div>
+    <input
+      type="range" min="1" max="100" value="50"
+      class="slider-track" id="crowdSlider"
+      oninput="updateCrowdSlider(this.value)"
+    />
+    <div class="slider-label"><span>Empty</span><span>Packed</span></div>
+    <button class="submit-btn" style="margin-top:16px" onclick="sendTelemetry()">
+      SUBMIT CROWD REPORT
+    </button>
+  </div>
+
+  <!-- RUMOR REPORT -->
+  <div class="card">
+    <div class="card-title">Report a Rumor / Incident</div>
+    <textarea
+      class="rumor-textarea"
+      id="rumorText"
+      placeholder="Describe what you heard or saw… e.g. 'Someone shouted fire near gate 4'"
+    ></textarea>
+    <button class="submit-btn" id="rumorBtn" onclick="submitRumor()">
+      VERIFY & REPORT
+    </button>
+    <div class="rumor-result" id="rumorResult"></div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  LOK-RAKSHAK B2G SDK // IRCTC PILOT // HACKATHON DEMO
+</footer>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+  // ═══════════════════════════════════════════════════════
+  //  CONFIG — automatically uses the current server's host
+  // ═══════════════════════════════════════════════════════
+  const BACKEND = window.location.origin;  // Same host as FastAPI serves this file
+  const USER_ID = 'CITIZEN_' + Math.random().toString(36).slice(2, 7).toUpperCase();
+
+  // ── Toast helper ─────────────────────────────────────────
+  function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className   = `toast ${type} show`;
+    setTimeout(() => t.className = 'toast', 2500);
+  }
+
+  // ── Status polling (every 3s) ─────────────────────────────
+  async function pollStatus() {
+    try {
+      const res  = await fetch(`${BACKEND}/api/sdk/status`);
+      const data = await res.json();
+      applyStatus(data.status, data.person_count);
+    } catch (_) {}
+  }
+
+  function applyStatus(status, personCount) {
+    const badge  = document.getElementById('statusBadge');
+    const banner = document.getElementById('alertBanner');
+    const msg    = document.getElementById('alertBannerMsg');
+
+    badge.className = `status-badge status-${status}`;
+    const symbols   = { GREEN: '●', YELLOW: '●', RED: '⚠', CRITICAL: '🚨' };
+    badge.textContent = `${symbols[status] || '●'} ${status}${personCount > 0 ? ` · ${personCount}p` : ''}`;
+
+    if (status === 'RED' || status === 'CRITICAL') {
+      banner.classList.add('show');
+      msg.textContent = status === 'CRITICAL'
+        ? 'CRITICAL ALERT — Follow RPF instructions. Move to exits calmly.'
+        : 'ELEVATED RISK — Platform crowded. Exercise caution.';
+    } else {
+      banner.classList.remove('show');
+    }
+  }
+
+  // ── SOS Button ────────────────────────────────────────────
+  async function triggerSOS(event) {
+    const btn = document.getElementById('sosBtn');
+    const st  = document.getElementById('sosStatus');
+
+    // Ripple effect
+    const ripple  = document.createElement('span');
+    ripple.className = 'sos-ripple';
+    const rect    = btn.getBoundingClientRect();
+    ripple.style.left = (event.clientX - rect.left) + 'px';
+    ripple.style.top  = (event.clientY - rect.top)  + 'px';
+    btn.appendChild(ripple);
+    setTimeout(() => ripple.remove(), 700);
+
+    btn.disabled     = true;
+    st.textContent   = '🔄 Sending SOS to RPF...';
+    st.style.color   = 'var(--yellow)';
+
+    try {
+      const res  = await fetch(`${BACKEND}/api/sdk/sos`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({
+          user_id:  USER_ID,
+          location: 'Citizen App — Platform Unknown',
+          message:  'Manual SOS triggered from citizen phone',
+        }),
+      });
+      const data = await res.json();
+      st.textContent = '✅ ' + (data.message || 'SOS sent. Help is coming.');
+      st.style.color = 'var(--green)';
+      showToast('🆘 SOS Sent! RPF Notified.', 'success');
+    } catch (err) {
+      st.textContent = '❌ Could not reach server. Try again.';
+      st.style.color = 'var(--red)';
+      showToast('Connection failed', 'error');
+    }
+
+    // Re-enable after 10s cool-down
+    setTimeout(() => {
+      btn.disabled   = false;
+      st.textContent = '';
+    }, 10000);
+  }
+
+  // ── Crowd Slider ──────────────────────────────────────────
+  function updateCrowdSlider(val) {
+    const v = parseInt(val);
+    document.getElementById('crowdValue').textContent = v;
+    const descs = [
+      [0,  25, 'Light — Platform comfortable'],
+      [25, 50, 'Moderate — Platform manageable'],
+      [50, 75, 'Heavy — Movement restricted'],
+      [75, 91, 'Very crowded — Risk elevated'],
+      [91, 101,'PACKED — Danger zone'],
+    ];
+    const desc = descs.find(([lo, hi]) => v >= lo && v < hi)?.[2] || '';
+    document.getElementById('crowdDesc').textContent = desc;
+    const crowdVal = document.getElementById('crowdValue');
+    crowdVal.style.color = v > 75 ? 'var(--red)' : v > 50 ? 'var(--yellow)' : 'var(--accent)';
+  }
+
+  async function sendTelemetry() {
+    const level = parseInt(document.getElementById('crowdSlider').value);
+    try {
+      await fetch(`${BACKEND}/api/sdk/telemetry`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ user_id: USER_ID, reported_crowd_level: level }),
+      });
+      showToast(`📊 Crowd level ${level}/100 reported!`, 'success');
+    } catch (_) {
+      showToast('Connection failed', 'error');
+    }
+  }
+
+  // ── Rumor Report ──────────────────────────────────────────
+  async function submitRumor() {
+    const text = document.getElementById('rumorText').value.trim();
+    if (!text) { showToast('Please describe the rumor first', 'error'); return; }
+
+    const btn = document.getElementById('rumorBtn');
+    btn.disabled     = true;
+    btn.textContent  = 'ANALYZING...';
+
+    try {
+      const res  = await fetch(`${BACKEND}/api/sdk/verify_rumor`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ user_id: USER_ID, text_report: text }),
+      });
+      const data = await res.json();
+
+      const resultEl = document.getElementById('rumorResult');
+      resultEl.classList.add('show');
+
+      if (data.status === 'FALSE_RUMOR_DETECTED') {
+        resultEl.className = 'rumor-result show threat';
+        resultEl.innerHTML = `<strong>⚠️ RUMOR INTERCEPTED</strong><br>
+          Words detected: <em>${data.detected_words?.join(', ')}</em><br>
+          ${data.verdict}<br><br>
+          <strong>${data.system_action}</strong>`;
+        showToast('🔊 Truth broadcast activated on platform!', 'success');
+      } else if (data.status === 'WARNING_LOGGED') {
+        resultEl.className = 'rumor-result show warning';
+        resultEl.innerHTML = `<strong>⚡ WARNING LOGGED</strong><br>${data.verdict}`;
+        showToast('Staff have been notified', 'success');
+      } else {
+        resultEl.className = 'rumor-result show safe';
+        resultEl.innerHTML = `<strong>✅ LOGGED</strong><br>${data.verdict}`;
+        showToast('Thank you for your report', 'success');
+      }
+    } catch (_) {
+      showToast('Connection failed', 'error');
+    }
+
+    btn.disabled    = false;
+    btn.textContent = 'VERIFY & REPORT';
+  }
+
+  // ── Start ─────────────────────────────────────────────────
+  pollStatus();
+  setInterval(pollStatus, 3000);
+</script>
+</body>
+</html>
