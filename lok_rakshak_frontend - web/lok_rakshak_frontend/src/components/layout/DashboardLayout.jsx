@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { Sun, Moon } from 'lucide-react';
 import useDashboardStore from '../../store/useDashboardStore';
 import { useWebSocket } from '../../hooks/useWebSocket';
 import Sidebar from './Sidebar';
@@ -18,10 +19,17 @@ const STATUS_COLORS = {
   CRITICAL: { text: 'text-[#FF1744]', label: 'CRITICAL // NDMA LIVE' },
 };
 
-const DashboardLayout = () => {
-  const { criticalAlert, systemStatus, wsConnected } = useDashboardStore();
+const LiveClock = () => {
+  const [time, setTime] = useState(new Date().toLocaleTimeString());
+  useEffect(() => {
+    const t = setInterval(() => setTime(new Date().toLocaleTimeString()), 1000);
+    return () => clearInterval(t);
+  }, []);
+  return <span className="text-sm font-mono" style={{ color: 'var(--text-secondary)' }}>{time}</span>;
+};
 
-  // Mount the WebSocket bridge — runs once at the root layout level
+const DashboardLayout = ({ theme, toggleTheme }) => {
+  const { criticalAlert, systemStatus, wsConnected } = useDashboardStore();
   useWebSocket();
 
   const statusMeta = STATUS_COLORS[systemStatus] || STATUS_COLORS.GREEN;
@@ -29,91 +37,128 @@ const DashboardLayout = () => {
 
   return (
     <div
-      className={`flex h-screen w-screen bg-[#0B1E2D] text-[#E3F2FD] overflow-hidden transition-all duration-700 ${
-        isCritical ? 'border-4 border-[#FF1744]/60' : ''
+      className={`flex h-screen w-screen overflow-hidden transition-all duration-700 ${
+        isCritical ? 'ring-2 ring-inset ring-[#FF1744]/40' : ''
       }`}
+      style={{ backgroundColor: 'var(--bg-main)', color: 'var(--text-primary)' }}
     >
       {/* Navigation Sidebar */}
       <Sidebar />
 
       {/* Main Dashboard Area */}
       <main className="flex-1 flex flex-col relative overflow-hidden">
-        {/* Header */}
+
+        {/* ── Header ── */}
         <header
-          className={`h-[60px] border-b border-[#1B3F63] flex items-center justify-between px-6 transition-colors duration-700 flex-shrink-0 ${
-            systemStatus === 'CRITICAL' ? 'bg-[#D32F2F]/30 animate-pulse' :
-            systemStatus === 'RED'      ? 'bg-[#7B1818]/20' :
-            systemStatus === 'YELLOW'   ? 'bg-[#3D2A00]/30' :
-            'bg-[#132F4C]'
-          }`}
+          className="flex-shrink-0 flex items-center justify-between px-6 transition-all duration-500"
+          style={{
+            height: 'var(--header-height)',
+            backgroundColor:
+              systemStatus === 'CRITICAL' ? 'rgba(211,47,47,0.18)' :
+              systemStatus === 'RED'      ? 'rgba(180,30,30,0.12)' :
+              systemStatus === 'YELLOW'   ? 'rgba(249,168,37,0.10)' :
+              'var(--bg-panel)',
+            borderBottom: '1px solid var(--border-faint)',
+          }}
         >
-          <div className="flex items-center gap-4">
-            <h1 className="text-xl font-bold tracking-wider text-[#4FC3F7]">
-              LOKRAKSHAK <span className="text-xs font-normal text-[#B0BEC5] ml-2">// COMMAND CENTER</span>
+          {/* Left: Brand */}
+          <div className="flex items-center gap-3">
+            <h1 className="text-lg font-black tracking-[0.18em]" style={{ color: 'var(--accent-primary)' }}>
+              LOK-RAKSHAK
             </h1>
+            <span
+              className="text-[10px] font-mono tracking-widest hidden md:block"
+              style={{ color: 'var(--text-muted)' }}
+            >
+              // ICCC COMMAND CENTER
+            </span>
           </div>
 
-          <div className="flex items-center gap-6">
-            {/* WebSocket connection indicator */}
+          {/* Right: Status row */}
+          <div className="flex items-center gap-5">
+
+            {/* WS indicator */}
             <div className="flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${wsConnected ? 'bg-[#388E3C] animate-pulse' : 'bg-[#D32F2F]'}`} />
-              <span className="text-[9px] font-mono text-[#78909C] tracking-widest">
+              <div
+                className={`w-2 h-2 rounded-full ${wsConnected ? 'animate-pulse' : ''}`}
+                style={{ backgroundColor: wsConnected ? 'var(--status-safe)' : 'var(--status-danger)' }}
+              />
+              <span className="text-[9px] font-mono tracking-widest" style={{ color: 'var(--text-muted)' }}>
                 {wsConnected ? 'BRAIN_LINK_LIVE' : 'BRAIN_LINK_DOWN'}
               </span>
             </div>
 
-            <div className="h-8 w-[1px] bg-[#1B3F63]" />
+            <div style={{ width: 1, height: 28, backgroundColor: 'var(--border-subtle)' }} />
 
+            {/* System status */}
             <div className="text-right">
-              <div className="text-xs text-[#78909C]">SYSTEM STATUS</div>
-              <div className={`text-sm font-mono font-bold ${statusMeta.text}`}>
+              <div className="text-[9px] tracking-widest" style={{ color: 'var(--text-muted)' }}>SYSTEM STATUS</div>
+              <div className={`text-[11px] font-mono font-bold ${statusMeta.text}`}>
                 {statusMeta.label}
               </div>
             </div>
 
-            <div className="h-8 w-[1px] bg-[#1B3F63]" />
-            <div className="text-sm font-mono">{new Date().toLocaleTimeString()}</div>
+            <div style={{ width: 1, height: 28, backgroundColor: 'var(--border-subtle)' }} />
+
+            <LiveClock />
+
+            <div style={{ width: 1, height: 28, backgroundColor: 'var(--border-subtle)' }} />
+
+            {/* Theme Toggle */}
+            <button
+              onClick={toggleTheme}
+              id="theme-toggle-btn"
+              title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+              className="p-2 rounded-lg transition-all duration-300 hover:scale-110"
+              style={{
+                backgroundColor: 'var(--bg-surface)',
+                border: '1px solid var(--border-subtle)',
+                color: 'var(--text-secondary)',
+              }}
+            >
+              {theme === 'dark'
+                ? <Sun size={15} />
+                : <Moon size={15} />
+              }
+            </button>
           </div>
         </header>
 
-        {/* Dashboard Body — 3 columns */}
-        {/*
-          Col layout (12 cols):
-            Left  — col-span-6 : Camera feeds (large primary + 3 small + anomaly bar)
-            Mid   — col-span-3 : Risk meter + Metrics
-            Right — col-span-3 : Spatial vector map (compact)
-        */}
-        <div className="flex-1 grid grid-cols-12 gap-3 p-3 overflow-hidden bg-[radial-gradient(circle_at_center,_#132F4C_0%,_#0B1E2D_100%)]">
-
-          {/* ── Left: Camera section (6 cols) ── */}
-          <section className="col-span-6 flex flex-col gap-3 overflow-hidden">
+        {/* ── Dashboard Body — 12 col grid ── */}
+        <div
+          className="flex-1 grid grid-cols-12 gap-5 p-5 overflow-hidden"
+          style={{
+            background: 'radial-gradient(circle at 30% 50%, var(--bg-panel) 0%, var(--bg-main) 100%)',
+          }}
+        >
+          {/* Left: Camera (7 cols) */}
+          <section className="col-span-7 flex flex-col gap-4 overflow-hidden">
             <CameraGrid />
           </section>
 
-          {/* ── Middle: Risk + Metrics (3 cols) ── */}
-          <section className="col-span-3 flex flex-col gap-3 overflow-hidden">
-            <div className="h-[40%] flex-shrink-0">
+          {/* Middle: Risk + Metrics (2 cols) */}
+          <section className="col-span-2 flex flex-col gap-4 overflow-hidden">
+            <div className="h-[55%] flex-shrink-0">
               <RiskMeter />
             </div>
-            <div className="flex-1 overflow-y-auto pr-1">
+            <div className="flex-1 overflow-y-auto custom-scrollbar pr-1">
               <MetricsGrid />
             </div>
           </section>
 
-          {/* ── Right: Spatial Awareness vector map (3 cols) ── */}
-          <section className="col-span-3 flex flex-col gap-3 overflow-hidden">
-            <div className="flex-1 bg-[#132F4C] border border-[#1B3F63] rounded shadow-2xl relative overflow-hidden">
+          {/* Right: Spatial (3 cols) */}
+          <section className="col-span-3 flex flex-col overflow-hidden">
+            <div className="flex-1 relative overflow-hidden modern-card">
               <SpatialAwareness />
             </div>
           </section>
-
         </div>
 
         {/* Global Alert Overlay */}
         {criticalAlert && <AlertOverlay />}
       </main>
 
-      {/* Slide-out Panel */}
+      {/* Slide-out Drawer */}
       <RightDrawer />
     </div>
   );

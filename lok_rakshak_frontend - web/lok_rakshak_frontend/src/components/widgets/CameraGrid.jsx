@@ -42,13 +42,13 @@ const PrimaryFeed = ({ isUpload }) => {
     systemStatus === 'CRITICAL' ? 'border-[#FF1744] shadow-[0_0_20px_rgba(255,23,68,0.5)]' :
     systemStatus === 'RED'      ? 'border-[#FF1744]' :
     systemStatus === 'YELLOW'   ? 'border-[#F9A825]' :
-    'border-[#1B3F63]';
+    'border-[#1B3F63]/30';
 
   // Add cache-busting param so browser re-fetches after source switch
   const feedSrc = `${VIDEO_FEED}?t=${Date.now()}`;
 
   return (
-    <div className={`relative w-full bg-[#071622] border-2 group overflow-hidden rounded transition-all duration-500 ${borderColor}`}
+    <div className={`relative w-full bg-[#071622] flex-1 group overflow-hidden rounded-xl shadow-xl transition-all duration-500 border-2 ${borderColor}`}
          style={{ aspectRatio: '16/9' }}>
       {feedOk ? (
         <img
@@ -72,31 +72,31 @@ const PrimaryFeed = ({ isUpload }) => {
         </div>
       )}
 
-      {/* Status bar overlay */}
-      <div className="absolute inset-0 p-2 flex flex-col justify-between pointer-events-none z-10">
+      {/* Status bar overlay with gradient */}
+      <div className="absolute inset-0 p-4 flex flex-col justify-between pointer-events-none z-10 bg-gradient-to-t from-black/80 via-black/10 to-black/60">
         {/* Top bar */}
         <div className="flex justify-between items-start">
-          <div className="bg-black/75 px-2 py-1 flex items-center gap-2 rounded">
+          <div className="bg-black/40 backdrop-blur-md border border-white/10 px-3 py-1.5 flex items-center gap-2 rounded-lg shadow-lg">
             <div className={`w-2 h-2 rounded-full ${feedOk ? 'bg-[#388E3C] animate-pulse' : 'bg-[#D32F2F]'}`} />
             <span className="text-[11px] font-mono tracking-tight text-white">LIVE // CAM_01 ★</span>
           </div>
-          <span className="text-[10px] font-mono bg-black/75 px-2 py-1 rounded text-white">
+          <span className="text-[10px] font-mono bg-black/50 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-lg text-white shadow-lg">
             {isUpload ? 'FOOTAGE MODE' : 'SOUTH_GATE'}
           </span>
         </div>
 
         {/* Bottom bar — person count LARGE */}
         <div className="flex justify-between items-end">
-          <div className="text-[10px] font-mono bg-black/75 px-2 py-1 rounded text-white">{timestamp}</div>
+          <div className="text-[10px] font-mono bg-black/50 backdrop-blur-md px-3 py-1.5 rounded-lg text-white/80">{timestamp}</div>
           <div
-            className={`font-mono font-black bg-black/80 px-3 py-1.5 rounded border ${
-              personCount > 20 ? 'text-[#FF1744] border-[#FF1744]' :
-              personCount > 10 ? 'text-[#F9A825] border-[#F9A825]' :
-              'text-[#4FC3F7] border-[#4FC3F7]'
+            className={`font-mono font-black backdrop-blur-md bg-black/50 px-4 py-2 rounded-xl border-2 shadow-2xl ${
+              personCount > 20 ? 'text-[#FF1744] border-[#FF1744]/40' :
+              personCount > 10 ? 'text-[#F9A825] border-[#F9A825]/40' :
+              'text-[#4FC3F7] border-[#4FC3F7]/30'
             }`}
-            style={{ fontSize: '1.4rem', lineHeight: 1 }}
+            style={{ fontSize: '1.6rem', lineHeight: 1 }}
           >
-            {personCount} <span style={{ fontSize: '0.6rem', fontWeight: 'normal', letterSpacing: '0.1em' }}>PERSONS</span>
+            {personCount} <span style={{ fontSize: '0.7rem', fontWeight: 'normal', letterSpacing: '0.1em' }} className="text-white/70">PERSONS</span>
           </div>
         </div>
       </div>
@@ -118,37 +118,74 @@ const SecondaryFeed = ({ id, name, density, status, risk }) => {
   }, []);
 
   return (
-    <div className={`relative aspect-video bg-[#071622] border group overflow-hidden rounded transition-all duration-500 border-[#1B3F63]`}>
+    <div
+      className="relative aspect-video border group overflow-hidden rounded-xl transition-all duration-500 shadow-md"
+      style={{
+        backgroundColor: 'var(--bg-surface)',
+        borderColor: 'var(--border-faint)',
+      }}
+    >
       {status === 'LIVE' ? (
         <div
           className="w-full h-full bg-cover bg-center"
           style={{ backgroundImage: "url('https://images.unsplash.com/photo-1541888946425-d81bb19480c5?auto=format&fit=crop&q=40&w=400')" }}
         />
       ) : (
-        <div className="flex flex-col items-center justify-center h-full text-[#78909C]">
-          <WifiOff size={28} className="mb-1 opacity-20" />
+        // Offline state — uses CSS vars, visible in both modes
+        <div
+          className="flex flex-col items-center justify-center h-full gap-1"
+          style={{ color: 'var(--text-muted)' }}
+        >
+          <WifiOff size={24} style={{ opacity: 0.35 }} />
           <span className="text-[9px] tracking-widest font-mono">SIGNAL LOST</span>
         </div>
       )}
 
-      <div className="absolute inset-0 p-1.5 flex flex-col justify-between pointer-events-none z-10">
+      {/* Overlay — always dark so it's readable over video */}
+      <div
+        className="absolute inset-0 p-2 flex flex-col justify-between pointer-events-none z-10"
+        style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.82) 0%, transparent 45%, rgba(0,0,0,0.45) 100%)' }}
+      >
+        {/* Top: status + camera name */}
         <div className="flex justify-between items-start">
-          <div className="bg-black/70 px-1.5 py-0.5 flex items-center gap-1 rounded">
-            <div className={`w-1.5 h-1.5 rounded-full ${status === 'LIVE' ? 'bg-[#388E3C] animate-pulse' : 'bg-[#D32F2F]'}`} />
-            <span className="text-[9px] font-mono">{status} // {id}</span>
+          <div
+            className="px-2 py-0.5 flex items-center gap-1.5 rounded-md"
+            style={{ backgroundColor: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(6px)' }}
+          >
+            <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${status === 'LIVE' ? 'bg-[#388E3C] animate-pulse' : 'bg-[#D32F2F]'}`} />
+            <span className="text-[9px] font-mono text-white/90">{status}</span>
           </div>
-          <span className="text-[8px] font-mono bg-black/70 px-1.5 py-0.5 rounded">{name}</span>
+          <span
+            className="text-[8px] font-mono px-2 py-0.5 rounded-md text-white/85"
+            style={{ backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(6px)' }}
+          >
+            {name}
+          </span>
         </div>
+
+        {/* Bottom: timestamp + density */}
         <div className="flex justify-between items-end">
-          <div className="text-[8px] font-mono bg-black/70 px-1.5 py-0.5 rounded">{timestamp}</div>
-          <div className={`text-[9px] font-mono bg-black/70 px-1.5 py-0.5 rounded font-bold ${risk > 80 ? 'text-[#FF1744]' : 'text-[#4FC3F7]'}`}>
+          <div
+            className="text-[8px] font-mono px-2 py-0.5 rounded-md text-white/60"
+            style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+          >
+            {timestamp.slice(-8)}
+          </div>
+          <div
+            className={`text-[9px] font-mono px-2 py-0.5 rounded-md font-bold ${risk > 80 ? 'text-[#FF6B6B]' : 'text-[#4FC3F7]'}`}
+            style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+          >
             {density}
           </div>
         </div>
       </div>
 
+      {/* Hover maximize */}
       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-        <button className="bg-[#132F4C] p-1.5 rounded-full border border-[#4FC3F7] text-[#4FC3F7] hover:bg-[#4FC3F7] hover:text-[#132F4C] transition-all">
+        <button
+          className="p-1.5 rounded-full transition-all"
+          style={{ backgroundColor: 'rgba(0,0,0,0.7)', border: '1px solid rgba(79,195,247,0.6)', color: '#4FC3F7' }}
+        >
           <Maximize2 size={12} />
         </button>
       </div>
@@ -268,26 +305,6 @@ const CameraGrid = () => {
         ))}
       </div>
 
-      {/* Anomaly index bar */}
-      <div className="bg-[#132F4C] border border-[#1B3F63] rounded p-3 flex flex-col gap-1.5 flex-shrink-0">
-        <div className="flex justify-between items-center text-[10px]">
-          <span className="text-[#78909C]">AI RISK INDEX</span>
-          <span className="text-[#4FC3F7] font-mono font-bold text-sm">
-            {personCount > 0 ? `${Math.min(personCount * 3, 99)}.${personCount % 10}%` : '0.0%'}
-          </span>
-        </div>
-        <div className="w-full h-2 bg-[#0B1E2D] rounded-full overflow-hidden">
-          <motion.div
-            animate={{ width: `${Math.min(personCount * 3, 100)}%` }}
-            transition={{ type: 'spring', stiffness: 60, damping: 20 }}
-            className="h-full bg-gradient-to-r from-[#388E3C] via-[#F9A825] to-[#FF1744]"
-          />
-        </div>
-        <p className="text-[9px] text-[#78909C] leading-tight">
-          {isUploadMode ? 'FOOTAGE MODE — ' : 'LIVE — '}
-          {personCount > 0 ? `${personCount} persons detected via YOLO.` : 'No persons in frame.'}
-        </p>
-      </div>
     </div>
   );
 };
