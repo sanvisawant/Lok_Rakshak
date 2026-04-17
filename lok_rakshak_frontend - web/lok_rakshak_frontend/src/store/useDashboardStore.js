@@ -9,6 +9,7 @@ const useDashboardStore = create((set, get) => ({
   variance:       0,
   compression:    0,
   wsConnected:    false,
+  history:        [], // [{ time, density, risk }] for charts
 
   // ── Legacy metrics (kept for MetricsGrid cards) ──────────────────────────
   metrics: {
@@ -16,16 +17,17 @@ const useDashboardStore = create((set, get) => ({
     flowRate:       242,
     riskLevel:      0,       // Now driven by personCount from WS
     avgWaitTime:    '02:45',
-    incidentRatio:  '0.04%',
+    incidentRatio:  '0.12%',
     peakLoad:       '16.8K',
+    squadStatus:    '14 ACTIVE',
   },
 
   // ── Camera feeds ─────────────────────────────────────────────────────────
   cameras: [
-    { id: 'CAM_01', name: 'SOUTH_GATE',   density: 'LIVE',       status: 'LIVE',    risk: 85 },
-    { id: 'CAM_02', name: 'CENTRAL_HUB',  density: 'NORMAL',     status: 'LIVE',    risk: 45 },
+    { id: 'CAM_01', name: 'SOUTH_GATE',   density: 'LIVE',       status: 'LIVE',    risk: 12 },
+    { id: 'CAM_02', name: 'CENTRAL_HUB',  density: 'NORMAL',     status: 'LIVE',    risk: 5 },
     { id: 'CAM_03', name: 'ESCALATOR_7',  density: 'SIGNAL_LOSS',status: 'OFFLINE', risk: 0  },
-    { id: 'CAM_04', name: 'NORTH_EXIT',   density: 'CRITICAL',   status: 'LIVE',    risk: 92 },
+    { id: 'CAM_04', name: 'NORTH_EXIT',   density: 'NORMAL',     status: 'LIVE',    risk: 8 },
   ],
 
   // ── Live alert timeline (grows as WS events come in) ─────────────────────
@@ -75,6 +77,11 @@ const useDashboardStore = create((set, get) => ({
 
     return {
       personCount: count,
+      history: [...get().history, { 
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }), 
+        density: count, 
+        risk: totalRisk 
+      }].slice(-20), // Keep last 20 points
       metrics: {
         ...state.metrics,
         totalPersonnel,
@@ -82,7 +89,8 @@ const useDashboardStore = create((set, get) => ({
         avgWaitTime,
         riskLevel: totalRisk,
         incidentRatio: `${(count * 0.002 + state.variance * 0.01).toFixed(2)}%`,
-        peakLoad: count > 50 ? `${(totalPersonnel / 1000).toFixed(1)}K` : state.metrics.peakLoad,
+        peakLoad: count > 30 ? `${(totalPersonnel / 1000).toFixed(1)}K` : state.metrics.peakLoad,
+        squadStatus: count > 50 ? '22 ACTIVE' : '14 ACTIVE',
       },
     };
   }),
@@ -99,15 +107,18 @@ const useDashboardStore = create((set, get) => ({
     compression: c,
     metrics: {
       ...state.metrics,
-      peakLoad: state.personCount > 50 ? `${((14000 + state.personCount * 8) / 1000).toFixed(1)}K` : state.metrics.peakLoad,
+      peakLoad: state.personCount > 30 ? `${((14000 + state.personCount * 8) / 1000).toFixed(1)}K` : state.metrics.peakLoad,
     }
   })),
 
   setWsConnected: (val) => set({ wsConnected: val }),
 
-  addLiveAlert: (alert) => set((state) => ({
-    alerts: [alert, ...state.alerts].slice(0, 20), // Keep last 20
-  })),
+  addLiveAlert: (alert) => set((state) => {
+    // Also update history if the status changes significantly
+    return {
+      alerts: [alert, ...state.alerts].slice(0, 20),
+    };
+  }),
 
   // ── Actions: UI ────────────────────────────────────────────────────────────
   setActiveDrawer:  (drawer) => set({ activeDrawer: drawer }),

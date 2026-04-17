@@ -47,23 +47,23 @@ const SignageCard = ({ id, status, lastUpdate, liveMessage, liveStyle }) => (
 );
 
 const SmartSignagePanel = () => {
-  const { systemStatus, signageMessage } = useDashboardStore();
-  const [customMsg, setCustomMsg] = useState('EMERGENCY: PLEASE PROCEED TO NEAREST EXIT. DO NOT PANIC.');
+  const { systemStatus, signageMessage, setSignageMessage } = useDashboardStore();
+  const [customMsg, setCustomMsg] = useState(signageMessage);
   const [deploying, setDeploying] = useState(false);
 
   const liveStyle = STATUS_SIGNAGE_STYLE[systemStatus] || STATUS_SIGNAGE_STYLE.GREEN;
   const now = new Date().toLocaleTimeString();
 
-  // Escalate message manually via the backend
-  const deployGlobalMessage = async () => {
+  // Update global store state
+  const deployGlobalMessage = () => {
     setDeploying(true);
-    try {
-      // POST as a manual override trigger
-      await fetch(`${BACKEND_URL}/api/triggers/escalate`, { method: 'POST' });
-    } catch (e) {
-      console.warn('[SIGNAGE] Deploy failed:', e);
-    }
-    setTimeout(() => setDeploying(false), 1000);
+    setSignageMessage(customMsg);
+    
+    // Simulate network delay for UX
+    setTimeout(() => {
+      setDeploying(false);
+      console.log(`[SIGNAGE] Deployed: ${customMsg}`);
+    }, 800);
   };
 
   const displays = [

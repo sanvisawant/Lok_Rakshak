@@ -23,7 +23,8 @@ class VisionEngine:
 
         # ── 1. YOLO Person Detection (every N-th frame) ────────────────────────
         if run_yolo:
-            results = self.model(frame, classes=[0], verbose=False)
+            # Lower confidence (0.10) to catch every person. Use iou (0.45) for NMS.
+            results = self.model(frame, classes=[0], verbose=False, conf=0.10, iou=0.45)
             self._last_boxes = results[0].boxes
             self._last_count = len(self._last_boxes)
 
@@ -33,14 +34,13 @@ class VisionEngine:
         for box in self._last_boxes:
             x1, y1, x2, y2 = map(int, box.xyxy[0])
             conf = float(box.conf[0]) if hasattr(box, 'conf') else 1.0
-            # Yellow box, thickness 3 for visibility
-            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 255), 3)
-            # Confidence label above each box
-            label = f"person {conf:.2f}"
-            label_y = max(y1 - 8, 16)
+            # Yellow box, thickness 2 (sleeker but visible)
+            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 255), 2)
+            # Confidence label
+            label = f"P {conf:.2f}"
             cv2.putText(
-                frame, label, (x1, label_y),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 255, 255), 2
+                frame, label, (x1, y1 - 5),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 255, 255), 1
             )
 
         # ── 2. Optical Flow (Crowd Physics) ───────────────────────────────────

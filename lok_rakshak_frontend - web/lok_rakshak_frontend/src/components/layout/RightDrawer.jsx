@@ -58,9 +58,9 @@ const RightDrawer = () => {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 200 }}
-            className="fixed right-0 top-0 h-full w-[380px] bg-[#132F4C] border-l border-[#1B3F63]/50 z-[70] flex flex-col shadow-2xl rounded-l-[2rem] overflow-hidden min-h-0"
+            className="fixed right-0 top-0 h-full w-[480px] bg-[#132F4C] border-l border-[#1B3F63]/50 z-[70] flex flex-col shadow-2xl rounded-l-[3rem] overflow-visible min-h-0"
           >
-            <div className="pt-10 px-8 pb-6 border-b border-[#1B3F63]/30 flex items-center justify-between gap-4 bg-[#0B1E2D]/20">
+            <div className="pt-10 pl-12 pr-8 pb-6 border-b border-[#1B3F63]/30 flex items-center justify-between gap-4 bg-[#0B1E2D]/20">
               <h2 className="text-sm font-bold tracking-[0.3em] text-[#4FC3F7] uppercase">
                 {getTitle()}
               </h2>
@@ -72,7 +72,7 @@ const RightDrawer = () => {
               </button>
             </div>
             
-            <div className="flex-1 overflow-y-auto px-8 py-8 custom-scrollbar scroll-smooth min-h-0">
+            <div className="flex-1 overflow-y-auto pl-12 pr-8 py-8 custom-scrollbar scroll-smooth min-h-0">
               <div className="flex flex-col gap-8">
                 {renderContent()}
               </div>

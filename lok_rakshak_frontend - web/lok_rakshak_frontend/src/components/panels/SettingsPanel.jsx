@@ -44,6 +44,27 @@ const SignageCard = ({ id, currentMessage, status, lastUpdate }) => (
 );
 
 const SettingsPanel = () => {
+  const [config, setConfig] = React.useState({
+    autoEscalate: true,
+    hapticAlerts: true,
+    anomalyRecord: false,
+    densityTrigger: 85,
+    sensitivity: 50
+  });
+
+  const [saving, setSaving] = React.useState(false);
+
+  const toggle = (key) => setConfig(prev => ({ ...prev, [key]: !prev[key] }));
+
+  const handleSync = () => {
+    setSaving(true);
+    // Simulate sync with backend config
+    setTimeout(() => {
+      setSaving(false);
+      console.log('[CONFIG] Settings synced to Lok-Rakshak Brain.');
+    }, 1200);
+  };
+
   return (
     <div className="flex flex-col gap-6 drawer-card p-6">
       <div className="space-y-4">
@@ -55,21 +76,27 @@ const SettingsPanel = () => {
         <div className="space-y-2">
            <div className="flex justify-between text-[10px] text-[#78909C] mb-1 uppercase tracking-[0.18em]">
               <span>CRITICAL_DENSITY_TRIGGER</span>
-              <span className="text-[#4FC3F7]">85%</span>
+              <span className="text-[#4FC3F7]">{config.densityTrigger}%</span>
            </div>
-           <div className="h-1.5 w-full bg-[#0B1E2D] rounded-full overflow-hidden border border-[#1B3F63]">
-              <div className="h-full bg-[#4FC3F7] w-[85%]" />
-           </div>
+           <input 
+              type="range" 
+              className="w-full accent-[#4FC3F7] bg-[#0B1E2D] h-1.5 rounded-full"
+              value={config.densityTrigger}
+              onChange={(e) => setConfig({ ...config, densityTrigger: parseInt(e.target.value) })}
+           />
         </div>
 
         <div className="space-y-2">
            <div className="flex justify-between text-[10px] text-[#78909C] mb-1 uppercase tracking-[0.18em]">
               <span>ALERT_SENSITIVITY</span>
-              <span className="text-[#4FC3F7]">MEDIUM</span>
+              <span className="text-[#4FC3F7]">{config.sensitivity > 70 ? 'HIGH' : config.sensitivity > 30 ? 'MEDIUM' : 'LOW'}</span>
            </div>
-           <div className="h-1.5 w-full bg-[#0B1E2D] rounded-full overflow-hidden border border-[#1B3F63]">
-              <div className="h-full bg-[#4FC3F7] w-[50%]" />
-           </div>
+           <input 
+              type="range" 
+              className="w-full accent-[#4FC3F7] bg-[#0B1E2D] h-1.5 rounded-full"
+              value={config.sensitivity}
+              onChange={(e) => setConfig({ ...config, sensitivity: parseInt(e.target.value) })}
+           />
         </div>
       </div>
 
@@ -81,22 +108,28 @@ const SettingsPanel = () => {
           <h3 className="section-heading" style={{ marginBottom: 0 }}>Notification Config</h3>
         </div>
         
-        <div className="grid grid-cols-1 gap-3">
-          <SettingToggle 
-            label="AUTO_ESCALATION" 
-            active={true} 
-            description="Allow AI to automatically escalate risk levels based on multi-vector analysis."
-          />
-          <SettingToggle 
-            label="SQUAD_HAPTIC_ALERTS" 
-            active={true} 
-            description="Send vibration alerts to on-duty personnel when density > 70%."
-          />
-          <SettingToggle 
-            label="ANOMALY_RECORDING" 
-            active={false} 
-            description="Automatically save local 10s clips when anomalous movement is detected."
-          />
+        <div className="grid grid-cols-1 gap-2">
+          <div onClick={() => toggle('autoEscalate')}>
+             <SettingToggle 
+               label="AUTO_ESCALATION" 
+               active={config.autoEscalate} 
+               description="Allow AI to automatically escalate risk levels based on multi-vector analysis."
+             />
+          </div>
+          <div onClick={() => toggle('hapticAlerts')}>
+             <SettingToggle 
+               label="SQUAD_HAPTIC_ALERTS" 
+               active={config.hapticAlerts} 
+               description="Send vibration alerts to on-duty personnel when density > 70%."
+             />
+          </div>
+          <div onClick={() => toggle('anomalyRecord')}>
+             <SettingToggle 
+               label="ANOMALY_RECORDING" 
+               active={config.anomalyRecord} 
+               description="Automatically save local 10s clips when anomalous movement is detected."
+             />
+          </div>
         </div>
       </div>
 
@@ -104,8 +137,12 @@ const SettingsPanel = () => {
          <button className="w-full py-3 bg-[#132F4C] border border-[#1B3F63] rounded text-[10px] font-bold tracking-widest text-[#E3F2FD] hover:bg-[#1B3F63] transition-all">
             RESET ALL TO DEFAULTS
          </button>
-         <button className="w-full py-3 bg-[#4FC3F7] text-[#132F4C] rounded text-[10px] font-bold tracking-[0.2em] hover:bg-[#00E5FF] transition-all">
-            APPLY GLOBAL SYNC
+         <button 
+            onClick={handleSync}
+            disabled={saving}
+            className="w-full py-3 bg-[#4FC3F7] text-[#132F4C] rounded text-[10px] font-bold tracking-[0.2em] hover:bg-[#00E5FF] transition-all disabled:opacity-50"
+         >
+            {saving ? 'SYNCING...' : 'APPLY GLOBAL SYNC'}
          </button>
       </div>
     </div>
