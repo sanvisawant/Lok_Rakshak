@@ -1,11 +1,60 @@
 import React, { useState } from 'react';
-import { ShieldCheck, AlertCircle, VolumeX, Send, Zap } from 'lucide-react';
+import { ShieldCheck, VolumeX, Send, Zap, AlertCircle } from 'lucide-react';
 import useDashboardStore from '../../store/useDashboardStore';
 import { BACKEND_URL } from '../../config';
 
+/* ── Palette ── */
+const C        = '#00FFC2';
+const AMBER    = '#FFB300';
+const RED      = '#FF3B3B';
+const GREY     = '#7A7A7A';
+const WHITE    = '#FFFFFF';
+const ICE      = '#E0F7FA';   /* desaturated heading tint — less eye-strain than pure cyan */
+const PANEL    = 'rgba(18,18,18,0.88)';
+const BORDER   = 'rgba(0,255,194,0.10)';
+
+/* ── Shared button styles ── */
+const BTN = {
+  primary: {
+    backgroundColor: C,
+    color: '#0D0D0D',
+    borderRadius: '0.65rem',
+    fontFamily: 'JetBrains Mono, monospace',
+    fontWeight: 800,
+    letterSpacing: '0.22em',
+    fontSize: 10,
+  },
+  ghost: {
+    backgroundColor: 'rgba(0,255,194,0.04)',
+    border: `1px solid rgba(0,255,194,0.13)`,
+    borderRadius: '0.65rem',
+    color: GREY,
+    fontFamily: 'JetBrains Mono, monospace',
+    fontWeight: 700,
+    letterSpacing: '0.20em',
+    fontSize: 10,
+  },
+};
+
+/* ── Section label (the uppercase cyan sub-heading) ── */
+const SectionLabel = ({ children }) => (
+  <p style={{
+    fontFamily: 'JetBrains Mono, monospace',
+    fontSize: 8,
+    fontWeight: 800,
+    letterSpacing: '0.38em',
+    textTransform: 'uppercase',
+    color: 'rgba(0,255,194,0.55)',
+    marginBottom: 12,
+  }}>
+    {children}
+  </p>
+);
+
+/* ── Custom Broadcast card ── */
 const CustomAnnouncementCard = () => {
-  const { systemStatus, personCount, addLiveAlert } = useDashboardStore();
-  const [msg, setMsg] = useState('');
+  const { addLiveAlert } = useDashboardStore();
+  const [msg, setMsg]   = useState('');
   const [busy, setBusy] = useState(false);
 
   const handleBroadcast = async () => {
@@ -15,43 +64,80 @@ const CustomAnnouncementCard = () => {
       await fetch(`${BACKEND_URL}/api/triggers/speak`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ custom_text: msg })
+        body: JSON.stringify({ custom_text: msg }),
       });
-      
-      // Log to timeline
       addLiveAlert({
-        id: Date.now(),
-        type: 'WARNING',
-        title: 'CUSTOM_BROADCAST',
-        location: 'STATION_WIDE',
-        message: `Operator broadcast: "${msg}"`,
-        time: new Date().toLocaleTimeString(),
-        priority: 'P1',
-        source: 'HITL_VOICE'
+        id: Date.now(), type: 'WARNING', title: 'CUSTOM_BROADCAST',
+        location: 'STATION_WIDE', message: `Operator broadcast: "${msg}"`,
+        time: new Date().toLocaleTimeString(), priority: 'P1', source: 'HITL_VOICE',
       });
-      
       setMsg('');
-    } catch (e) {
-      console.error(e);
-    }
+    } catch (e) { console.error(e); }
     setBusy(false);
   };
 
   return (
-    <div className="p-8 rounded-[2rem] border border-[#4FC3F7]/30 bg-[#0B1E2D]/60 backdrop-blur-xl mb-8 shadow-2xl relative overflow-hidden group">
-      <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-30 transition-opacity">
-        <VolumeX size={48} className="text-[#4FC3F7]" />
-      </div>
-      
-      <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 bg-[#4FC3F7]/10 rounded-xl text-[#4FC3F7]">
-          <Zap size={20} />
-        </div>
-        <h4 className="text-sm font-bold text-[#E3F2FD] tracking-widest uppercase">Custom Live Broadcast</h4>
+    <div style={{
+      backgroundColor: PANEL,
+      backdropFilter: 'blur(12px)',
+      border: `1px solid rgba(0,255,194,0.14)`,
+      borderRadius: '1rem',
+      padding: '20px 20px 18px',
+      marginBottom: 20,
+      position: 'relative',
+      overflow: 'hidden',
+    }}>
+      {/* Watermark */}
+      <div style={{ position: 'absolute', top: 10, right: 10, opacity: 0.05, pointerEvents: 'none' }}>
+        <VolumeX size={42} color={C} />
       </div>
 
+      {/* Title row */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+        <div style={{
+          padding: '6px 7px',
+          borderRadius: 8,
+          backgroundColor: 'rgba(0,255,194,0.07)',
+          border: `1px solid ${BORDER}`,
+          color: C,
+          display: 'flex',
+          alignItems: 'center',
+        }}>
+          <Zap size={14} />
+        </div>
+        <h4 style={{
+          fontFamily: 'JetBrains Mono, monospace',
+          fontSize: 12,
+          fontWeight: 900,
+          letterSpacing: '0.26em',
+          textTransform: 'uppercase',
+          color: ICE,    /* Ice White — not pure cyan */
+          margin: 0,
+        }}>
+          Custom Live Broadcast
+        </h4>
+      </div>
+
+      {/* Textarea — padded generously */}
       <textarea
-        className="w-full h-24 bg-[#0B1E2D]/70 border border-[#1B3F63]/50 rounded-2xl p-4 text-xs font-mono text-[#E3F2FD] focus:outline-none focus:border-[#4FC3F7] transition-all mb-4 placeholder-[#78909C]"
+        style={{
+          width: '100%',
+          height: 88,
+          backgroundColor: 'rgba(0,0,0,0.55)',
+          color: WHITE,
+          border: `1px solid rgba(0,255,194,0.13)`,
+          borderRadius: 10,
+          padding: '14px 14px',   /* ≥12px internal padding */
+          fontFamily: 'JetBrains Mono, monospace',
+          fontSize: 10,
+          lineHeight: 1.7,
+          resize: 'none',
+          outline: 'none',
+          caretColor: C,
+          marginBottom: 12,
+          display: 'block',
+          boxSizing: 'border-box',
+        }}
         placeholder="ENTER ANNOUNCEMENT TEXT..."
         value={msg}
         onChange={(e) => setMsg(e.target.value)}
@@ -60,133 +146,234 @@ const CustomAnnouncementCard = () => {
       <button
         onClick={handleBroadcast}
         disabled={busy || !msg.trim()}
-        className="w-full py-4 bg-[#4FC3F7] text-[#132F4C] rounded-2xl text-[10px] font-bold tracking-[0.3em] uppercase hover:bg-[#00E5FF] transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+        style={{
+          ...BTN.primary,
+          width: '100%',
+          padding: '10px 0',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 8,
+          opacity: busy || !msg.trim() ? 0.45 : 1,
+          cursor: busy || !msg.trim() ? 'not-allowed' : 'pointer',
+          transition: 'opacity 0.2s',
+        }}
       >
-        {busy ? 'BROADCASTING...' : (
-          <>
-            <Send size={16} />
-            PUSH TO STATION SPEAKERS
-          </>
-        )}
+        <Send size={12} />
+        {busy ? 'BROADCASTING...' : 'PUSH TO STATION SPEAKERS'}
       </button>
     </div>
   );
 };
 
+/* ── Protocol step card ── */
 const ProtocolStep = ({ number, title, status, description }) => {
   const { systemStatus, personCount, addLiveAlert } = useDashboardStore();
+  const isActive = status === 'ACTIVE';
 
-  const speak = async (status, density) => {
+  const speak = async () => {
     try {
-      const res = await fetch(`${BACKEND_URL}/api/triggers/speak`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status, density })
+      const res  = await fetch(`${BACKEND_URL}/api/triggers/speak`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: systemStatus, density: personCount }),
       });
       const data = await res.json();
-      
-      // Log to timeline
       addLiveAlert({
         id: Date.now(),
-        type: status === 'CRITICAL' ? 'CRITICAL' : 'WARNING',
+        type: systemStatus === 'CRITICAL' ? 'CRITICAL' : 'WARNING',
         title: `PROTOCOL_${number}_EXECUTION`,
-        location: 'SECTOR_7',
-        message: data.message,
-        time: new Date().toLocaleTimeString(),
-        priority: 'P1',
-        source: 'AUTO_VOICE'
+        location: 'SECTOR_7', message: data.message,
+        time: new Date().toLocaleTimeString(), priority: 'P1', source: 'AUTO_VOICE',
       });
-    } catch (e) {
-      console.warn('[VOICE] Backend speak failed:', e);
-    }
-  };
-
-  const handleExecute = () => {
-    if (status !== 'ACTIVE') return;
-    speak(systemStatus, personCount);
+    } catch (e) { console.warn('[VOICE] Backend speak failed:', e); }
   };
 
   return (
-    <div className={`p-8 rounded-[2rem] border backdrop-blur-md transition-all duration-500 shadow-2xl ${status === 'ACTIVE' ? 'bg-[#1B3F63]/80 border-[#4FC3F7] shadow-[#4FC3F7]/15 scale-[1.02]' : 'bg-[#0B1E2D]/40 border-[#1B3F63]/40 opacity-50 hover:opacity-100'}`}>
-      <div className="flex justify-between items-start mb-4">
-        <div className="flex items-center gap-4">
-          <span className="text-[10px] font-mono bg-[#4FC3F7] text-[#132F4C] px-3 py-1 rounded-full font-bold shadow-sm">{number}</span>
-          <h4 className="text-xs font-bold text-[#E3F2FD] tracking-widest uppercase">{title}</h4>
-        </div>
+    <div style={{
+      padding: '18px 18px 16px',
+      borderRadius: 14,
+      backgroundColor: isActive ? 'rgba(0,255,194,0.04)' : 'rgba(14,14,14,0.72)',
+      border: isActive ? '1px solid rgba(0,255,194,0.22)' : '1px solid rgba(255,255,255,0.04)',
+      boxShadow: isActive ? '0 0 20px rgba(0,255,194,0.06)' : 'none',
+      opacity: isActive ? 1 : 0.52,
+      transition: 'all 0.3s',
+      marginBottom: 14,   /* 14px gap between protocols */
+    }}>
+      {/* Number badge + title */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+        <span style={{
+          fontFamily: 'JetBrains Mono, monospace',
+          fontSize: 8,
+          fontWeight: 900,
+          padding: '2px 8px',
+          borderRadius: 999,
+          color: '#0D0D0D',
+          backgroundColor: isActive ? C : GREY,
+          flexShrink: 0,
+        }}>
+          {number}
+        </span>
+        {/* Title — bolder than description, Ice White */}
+        <h4 style={{
+          fontFamily: 'JetBrains Mono, monospace',
+          fontSize: 11,
+          fontWeight: 900,           /* bolder */
+          letterSpacing: '0.22em',
+          textTransform: 'uppercase',
+          color: isActive ? ICE : GREY,
+          margin: 0,
+        }}>
+          {title}
+        </h4>
       </div>
-      <p className="text-xs text-[#B0BEC5] mb-5 leading-relaxed font-medium">{description}</p>
-      <button 
-        onClick={handleExecute}
-        className={`w-full py-4 rounded-xl text-[10px] font-bold tracking-[0.2em] transition-all transform active:scale-95 ${status === 'ACTIVE' ? 'bg-[#4FC3F7] text-[#132F4C] hover:bg-[#00E5FF] shadow-[0_4px_15px_rgba(79,195,247,0.3)]' : 'bg-[#1B3F63]/50 text-[#78909C]'}`}
+
+      {/* Description — lighter weight, grey, indented past badge */}
+      <p style={{
+        fontFamily: 'JetBrains Mono, monospace',
+        fontSize: 9,
+        fontWeight: 400,             /* lighter than title */
+        lineHeight: 1.75,
+        color: GREY,
+        paddingLeft: 32,             /* aligns with title text */
+        marginBottom: 14,
+        margin: '0 0 14px 32px',
+      }}>
+        {description}
+      </p>
+
+      <button
+        onClick={() => isActive && speak()}
+        disabled={!isActive}
+        style={{
+          ...(isActive ? BTN.primary : BTN.ghost),
+          width: '100%',
+          padding: '10px 0',
+          display: 'block',
+          cursor: isActive ? 'pointer' : 'not-allowed',
+          transition: 'all 0.2s',
+        }}
       >
-        {status === 'ACTIVE' ? 'EXECUTE CORE PROTOCOL' : 'AUTHORIZATION REQUIRED'}
+        {isActive ? 'EXECUTE CORE PROTOCOL' : 'AUTHORIZATION REQUIRED'}
       </button>
     </div>
   );
 };
 
+/* ── Main panel ── */
 const NDMAProtocolPanel = () => {
-  const protocols = [
-    { number: 'P1', title: 'CROWD DIVERSION', status: 'ACTIVE', description: 'Initiate automated voice announcements and redirect personnel to secondary exits in Sector-7.' },
-    { number: 'P2', title: 'ENTRY RESTRICTION', status: 'LOCKED', description: 'Lockdown of all primary entrance turnstiles. Divert arriving passengers to holding areas.' },
-    { number: 'P3', title: 'FULL EVACUATION', status: 'LOCKED', description: 'State-wide emergency protocols. All platform gates opened. Emergency services dispatched.' },
-  ];
-
   const handleStopAudio = async () => {
-    try {
-      await fetch(`${BACKEND_URL}/api/triggers/stop-audio`, { method: 'POST' });
-      addLiveAlert({
-        id: Date.now(),
-        type: 'WARNING',
-        title: 'EMERGENCY_STOP',
-        location: 'AUDIO_ENGINE',
-        message: 'All ongoing voice broadcasts have been terminated by operator.',
-        time: new Date().toLocaleTimeString(),
-        priority: 'P1',
-        source: 'HITL_STOP'
-      });
-    } catch (e) {
-      console.error(e);
-    }
+    try { await fetch(`${BACKEND_URL}/api/triggers/stop-audio`, { method: 'POST' }); }
+    catch (e) { console.error(e); }
   };
 
+  const protocols = [
+    { number: 'P1', title: 'CROWD DIVERSION',  status: 'ACTIVE', description: 'Initiate automated voice announcements and redirect personnel to secondary exits in Sector-7.' },
+    { number: 'P2', title: 'ENTRY RESTRICTION', status: 'LOCKED', description: 'Lockdown of all primary entrance turnstiles. Divert arriving passengers to holding areas.' },
+    { number: 'P3', title: 'FULL EVACUATION',   status: 'LOCKED', description: 'State-wide emergency protocols. All platform gates opened. Emergency services dispatched.' },
+  ];
+
   return (
-    <div className="flex flex-col h-full gap-8 drawer-card p-6">
+    <div style={{ display: 'flex', flexDirection: 'column' }}>
+
+      {/* ── Custom Broadcast ── */}
       <CustomAnnouncementCard />
 
-      <div className="flex items-center justify-between p-5 bg-[#D32F2F]/10 border border-[#D32F2F]/20 rounded-[2rem] backdrop-blur-sm">
-        <div className="flex items-center gap-4">
-          <ShieldCheck className="text-[#D32F2F]" size={24} />
+      {/* ── Emergency Core ── */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '14px 16px',
+        borderRadius: 14,
+        backgroundColor: 'rgba(255,59,59,0.06)',
+        border: '1px solid rgba(255,59,59,0.18)',
+        marginBottom: 24,    /* generous 24px before protocol list */
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <ShieldCheck size={18} color={RED} />
           <div>
-            <div className="text-[11px] font-bold text-[#D32F2F] tracking-[0.2em] uppercase">Emergency Core</div>
-            <div className="text-[10px] text-[#78909C] font-mono">STATUS: READY</div>
+            <div style={{
+              fontFamily: 'JetBrains Mono, monospace',
+              fontSize: 11,
+              fontWeight: 900,
+              letterSpacing: '0.24em',
+              textTransform: 'uppercase',
+              color: '#FF6B6B',    /* softer red — not harsh */
+            }}>
+              Emergency Core
+            </div>
+            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 8, color: GREY, marginTop: 3 }}>
+              STATUS: READY
+            </div>
           </div>
         </div>
-        <button 
+        <button
           onClick={handleStopAudio}
-          className="p-3 bg-[#D32F2F] text-white rounded-xl hover:bg-red-600 transition-all shadow-lg active:scale-90"
-          title="STOP ALL AUDIO"
+          style={{
+            padding: '8px 10px',
+            borderRadius: 10,
+            backgroundColor: 'rgba(255,59,59,0.12)',
+            border: '1px solid rgba(255,59,59,0.28)',
+            color: RED,
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+            display: 'flex',
+            alignItems: 'center',
+          }}
         >
-          <VolumeX size={20} />
+          <VolumeX size={15} />
         </button>
       </div>
 
-      <div className="flex-1 flex flex-col gap-6">
-        <h3 className="section-heading px-2">NDMA Standard Protocols</h3>
-        {protocols.map((p) => (
-          <ProtocolStep key={p.number} {...p} />
-        ))}
+      {/* ── Protocol list ── */}
+      <div style={{ marginBottom: 10 }}>
+        <SectionLabel>NDMA Standard Protocols</SectionLabel>
+        {protocols.map((p) => <ProtocolStep key={p.number} {...p} />)}
       </div>
 
-      <div className="mt-auto p-6 border border-[#F9A825]/20 bg-[#F9A825]/5 rounded-[2rem] relative overflow-hidden group">
-         <div className="absolute top-0 left-0 w-1 h-full bg-[#F9A825] opacity-40 group-hover:opacity-100 transition-opacity" />
-         <div className="flex items-center gap-3 mb-3 text-[#F9A825]">
-            <AlertCircle size={18} />
-            <span className="text-[11px] font-bold tracking-[0.3em] uppercase">SOP Reminder (Sec 4.2)</span>
-         </div>
-         <p className="text-[11px] text-[#94A3B8] leading-relaxed font-medium">
-            Ensure clear horizontal lines for exit paths. Do not initiate lockdown without visual confirmation if risk &lt; 85%.
-         </p>
+      {/* ── SOP Reminder ── gradient border glow, no solid yellow ── */}
+      <div style={{
+        padding: '16px 18px',
+        borderRadius: 14,
+        backgroundColor: 'rgba(255,179,0,0.03)',
+        /* gradient border via box-shadow instead of solid border */
+        boxShadow: `inset 0 0 0 1px rgba(255,179,0,0.12), 0 0 18px rgba(255,179,0,0.05)`,
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        {/* Left accent bar — gradient fade */}
+        <div style={{
+          position: 'absolute',
+          left: 0, top: 0, bottom: 0,
+          width: 3,
+          background: 'linear-gradient(to bottom, transparent, rgba(255,179,0,0.7), transparent)',
+          borderRadius: 2,
+        }} />
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingLeft: 12, marginBottom: 8 }}>
+          <AlertCircle size={13} color={AMBER} />
+          <span style={{
+            fontFamily: 'JetBrains Mono, monospace',
+            fontSize: 9,
+            fontWeight: 900,
+            letterSpacing: '0.26em',
+            textTransform: 'uppercase',
+            color: AMBER,
+          }}>
+            SOP Reminder (Sec 4.2)
+          </span>
+        </div>
+        <p style={{
+          fontFamily: 'JetBrains Mono, monospace',
+          fontSize: 9,
+          fontWeight: 400,
+          lineHeight: 1.75,
+          color: GREY,
+          paddingLeft: 12,
+          margin: 0,
+        }}>
+          Ensure clear horizontal lines for exit paths. Do not initiate lockdown without visual confirmation if risk &lt; 85%.
+        </p>
       </div>
     </div>
   );

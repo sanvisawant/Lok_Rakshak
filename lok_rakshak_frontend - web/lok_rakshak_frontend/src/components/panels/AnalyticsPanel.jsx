@@ -2,74 +2,109 @@ import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import useDashboardStore from '../../store/useDashboardStore';
 
+const C = '#00FFC2';
+const AMBER = '#FFB300';
+const RED   = '#FF3B3B';
+const GREY  = '#7A7A7A';
+const WHITE = '#FFFFFF';
+const PANEL = 'rgba(18,18,18,0.85)';
+const BORDER = 'rgba(0,255,194,0.10)';
+
+const card = {
+  backgroundColor: PANEL,
+  backdropFilter: 'blur(10px)',
+  border: `1px solid ${BORDER}`,
+  borderRadius: '1rem',
+};
+
 const AnalyticsPanel = () => {
   const { history, metrics } = useDashboardStore();
-
-  // If no history yet, use some placeholders or empty
-  const chartData = history.length > 0 ? history : [
-    { time: '00:00:00', density: 0, risk: 0 }
-  ];
+  const chartData = history.length > 0 ? history : [{ time: '00:00:00', density: 0, risk: 0 }];
+  const lastDensity = chartData[chartData.length - 1]?.density || 0;
+  const lastRisk    = chartData[chartData.length - 1]?.risk    || 0;
 
   return (
-    <div className="flex flex-col gap-8 drawer-card p-6">
+    <div className="flex flex-col gap-6">
+
+      {/* ── Live Density Line Chart ── */}
       <div>
-        <h3 className="section-heading">Live Crowd Density (Real-time)</h3>
-        <div className="h-56 w-full bg-[#0B1E2D]/70 border border-[#1B3F63]/50 rounded-[2rem] p-6 shadow-xl backdrop-blur-sm">
+        <p className="text-[8px] font-mono font-bold tracking-[0.35em] uppercase mb-3"
+          style={{ color: C }}>
+          Live Crowd Density (Real-time)
+        </p>
+        <div className="h-52 w-full p-4 rounded-2xl" style={card}>
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1B3F63" opacity={0.2} vertical={false} />
-              <XAxis 
-                dataKey="time" 
-                hide={true}
+              <CartesianGrid strokeDasharray="2 6" stroke="rgba(0,255,194,0.06)" vertical={false} />
+              <XAxis dataKey="time" hide />
+              <YAxis hide domain={[0, 'auto']} />
+              <Tooltip
+                contentStyle={{ backgroundColor: '#111', border: `1px solid ${BORDER}`, borderRadius: 10, fontSize: 10, fontFamily: 'JetBrains Mono, monospace', color: WHITE }}
+                itemStyle={{ color: C }}
+                labelStyle={{ color: GREY }}
               />
-              <YAxis hide={true} domain={[0, 'auto']} />
-              <Tooltip 
-                contentStyle={{ backgroundColor: '#132F4C', border: '1px solid #1B3F63', borderRadius: '12px', fontSize: '10px' }}
-                itemStyle={{ color: '#4FC3F7' }}
-              />
-              <Line 
-                type="monotone" 
-                dataKey="density" 
-                stroke="#4FC3F7" 
-                strokeWidth={3} 
-                dot={false}
-                isAnimationActive={false} // Faster updates
+              <Line type="monotone" dataKey="density" stroke={C} strokeWidth={2.5}
+                dot={false} isAnimationActive={false}
+                style={{ filter: `drop-shadow(0 0 4px ${C})` }}
               />
             </LineChart>
           </ResponsiveContainer>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="bg-[#0B1E2D]/65 border border-[#1B3F63]/50 p-5 rounded-[2rem] shadow-lg backdrop-blur-sm">
-           <div className="text-[10px] text-[#78909C] mb-2 font-bold tracking-widest uppercase">Detection Count</div>
-           <div className="text-2xl font-mono font-bold text-[#E3F2FD]">{chartData[chartData.length - 1]?.density || 0}</div>
+      {/* ── Stat Cards ── */}
+      <div className="grid grid-cols-2 gap-3">
+        {/* Detection Count */}
+        <div className="p-4 rounded-2xl" style={card}>
+          <p className="text-[8px] font-mono font-bold tracking-[0.3em] uppercase mb-2" style={{ color: GREY }}>
+            DETECTION COUNT
+          </p>
+          <p className="text-3xl font-mono font-black" style={{ color: WHITE }}>
+            {lastDensity}
+          </p>
         </div>
-        <div className="bg-[#0B1E2D]/65 border border-[#1B3F63]/50 p-5 rounded-[2rem] shadow-lg backdrop-blur-sm">
-           <div className="text-[10px] text-[#78909C] mb-2 font-bold tracking-widest uppercase">Current Risk</div>
-           <div className="text-2xl font-mono font-bold text-[#FF1744]">{chartData[chartData.length - 1]?.risk || 0}%</div>
+
+        {/* Current Risk */}
+        <div className="p-4 rounded-2xl" style={{ ...card, border: `1px solid rgba(255,59,59,0.15)` }}>
+          <p className="text-[8px] font-mono font-bold tracking-[0.3em] uppercase mb-2" style={{ color: GREY }}>
+            CURRENT RISK
+          </p>
+          <p className="text-3xl font-mono font-black"
+            style={{ color: lastRisk > 70 ? RED : lastRisk > 40 ? AMBER : C, textShadow: `0 0 10px currentColor` }}>
+            {lastRisk}%
+          </p>
         </div>
       </div>
 
+      {/* ── Risk Distribution Bar Chart ── */}
       <div>
-        <h3 className="section-heading">Risk Factor Distribution</h3>
-        <div className="h-48 w-full bg-[#0B1E2D]/70 border border-[#1B3F63]/50 rounded-[2rem] p-6 shadow-xl backdrop-blur-sm">
+        <p className="text-[8px] font-mono font-bold tracking-[0.35em] uppercase mb-3"
+          style={{ color: C }}>
+          Risk Factor Distribution
+        </p>
+        <div className="h-44 w-full p-4 rounded-2xl" style={card}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData}>
-              <Bar 
-                dataKey="risk" 
-                fill="#1B3F63" 
-                radius={[4, 4, 0, 0]} 
-                hover={{ fill: '#FF1744' }}
+              <CartesianGrid strokeDasharray="2 6" stroke="rgba(0,255,194,0.05)" vertical={false} />
+              <Tooltip
+                contentStyle={{ backgroundColor: '#111', border: `1px solid ${BORDER}`, borderRadius: 10, fontSize: 10, fontFamily: 'JetBrains Mono, monospace' }}
+                itemStyle={{ color: AMBER }}
+              />
+              <Bar dataKey="risk" fill="rgba(0,255,194,0.15)" radius={[4, 4, 0, 0]}
                 isAnimationActive={false}
+                stroke={C} strokeWidth={0.5}
               />
             </BarChart>
           </ResponsiveContainer>
         </div>
       </div>
 
-      <div className="p-5 bg-[#0B1E2D]/80 border border-[#D32F2F]/20 rounded-[2rem] text-[10px] text-[#94A3B8] italic leading-relaxed shadow-inner">
-        Note: Predictive models are currently prioritizing the live video stream telemetry. Incident ratio is adjusted based on detected crowd chaos.
+      {/* ── Note ── */}
+      <div className="p-4 rounded-2xl" style={{ ...card, border: '1px solid rgba(255,179,0,0.10)' }}>
+        <p className="text-[9px] font-mono leading-relaxed italic" style={{ color: GREY }}>
+          Note: Predictive models are currently prioritizing the live video stream telemetry.
+          Incident ratio is adjusted based on detected crowd chaos.
+        </p>
       </div>
     </div>
   );

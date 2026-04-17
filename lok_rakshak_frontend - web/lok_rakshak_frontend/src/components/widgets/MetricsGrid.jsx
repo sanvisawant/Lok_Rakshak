@@ -2,151 +2,132 @@ import React from 'react';
 import useDashboardStore from '../../store/useDashboardStore';
 import { Users, TrendingUp, Clock, AlertTriangle, Zap, UserCheck } from 'lucide-react';
 
-/**
- * MetricCard — text fully centered.
- * Icon sits top-center, label + value centered below.
- * Trend badge is absolute top-right so it doesn't push text.
- */
-const MetricCard = ({ label, value, icon: Icon, trend, colorClass }) => (
-  <div
-    className="glass-panel relative flex flex-col items-center justify-center text-center py-4 px-2 gap-1 group transition-all duration-200 hover:shadow-lg min-w-0 min-h-[90px]"
-  >
-    {/* Trend badge — absolutely positioned top-right, doesn't affect layout */}
-    {trend && (
-      <span
-        className={`absolute top-2 right-2 text-[8px] font-mono font-bold ${
-          typeof trend === 'string' && trend.startsWith('+')
-            ? 'text-[#D32F2F]'
-            : 'text-[#388E3C]'
-        }`}
-      >
-        {trend}
-      </span>
-    )}
+const NEON_CYAN  = '#00FFC2';
+const NEON_AMBER = '#FFB300';
+const NEON_RED   = '#FF3B3B';
+const LABEL_GREY = '#7A7A7A';
+const VAL_WHITE  = '#FFFFFF';
 
-    {/* Centered icon */}
+/**
+ * MetricCard — Aero-Tech HUD
+ * Icon → absolute top-left (never affects centering)
+ * Trend → absolute top-right
+ * Label + Value → perfectly centered via flex-col items-center
+ */
+const MetricCard = ({ label, value, icon: Icon, trend, accentColor }) => {
+  const accent = accentColor || NEON_CYAN;
+  const isTrendUp = typeof trend === 'string' && trend.startsWith('+');
+
+  return (
     <div
-      className="p-1.5 rounded-lg flex items-center justify-center mb-1 transition-colors duration-200"
+      className="relative flex flex-col justify-center min-w-0 min-h-[86px] rounded-xl"
       style={{
-        backgroundColor: 'var(--bg-surface)',
-        color: 'var(--accent-primary)',
-        border: '1px solid var(--border-faint)',
+        backgroundColor: 'rgba(18,18,18,0.85)',
+        backdropFilter: 'blur(10px)',
+        border: `1px solid rgba(0,255,194,0.08)`,
+        padding: '12px 10px 10px 36px',  /* left padding clears the absolute icon */
       }}
     >
-      <Icon size={14} />
-    </div>
+      {/* Icon — absolute top-left, zero layout impact */}
+      <div
+        className="absolute top-3 left-2.5 flex items-center justify-center"
+        style={{ color: `${accent}60` }}
+      >
+        <Icon size={11} />
+      </div>
 
-    {/* Centered label */}
-    <div
-      className="text-[8px] font-bold tracking-widest w-full truncate"
-      style={{ color: 'var(--text-muted)' }}
-      title={label}
-    >
-      {label}
-    </div>
+      {/* Trend badge — absolute top-right */}
+      {trend && (
+        <span
+          className="absolute top-2 right-2 text-[7px] font-mono font-bold"
+          style={{ color: isTrendUp ? NEON_RED : NEON_CYAN }}
+        >
+          {trend}
+        </span>
+      )}
 
-    {/* Centered value */}
-    <div
-      className={`text-sm font-mono font-bold w-full truncate ${colorClass || ''}`}
-      style={{ color: colorClass ? undefined : 'var(--text-primary)', lineHeight: 1.2 }}
-      title={value}
-    >
-      {value}
+      {/* Left-aligned label */}
+      <span
+        className="text-[7px] font-mono font-bold tracking-[0.28em] uppercase block"
+        style={{ color: LABEL_GREY }}
+      >
+        {label}
+      </span>
+
+      {/* Left-aligned value */}
+      <span
+        className="text-[15px] font-mono font-black block leading-tight mt-0.5 w-full truncate"
+        style={{
+          color: accentColor ? accentColor : VAL_WHITE,
+          textShadow: accentColor ? `0 0 8px ${accentColor}` : 'none',
+        }}
+        title={value}
+      >
+        {value}
+      </span>
     </div>
-  </div>
-);
+  );
+};
 
 const MetricsGrid = () => {
   const { metrics, personCount } = useDashboardStore();
 
   const cards = [
-    {
-      label: 'TOTAL PERS.',
-      value: metrics.totalPersonnel.toLocaleString(),
-      icon: Users,
-      trend: `+${(personCount * 0.1).toFixed(1)}%`,
-    },
-    {
-      label: 'FLOW RATE',
-      value: `${metrics.flowRate} p/m`,
-      icon: TrendingUp,
-      trend: personCount > 40 ? `-${((personCount - 40) * 0.5).toFixed(1)}%` : 'NORMAL',
-    },
-    {
-      label: 'AVG WAIT',
-      value: metrics.avgWaitTime,
-      icon: Clock,
-    },
-    {
-      label: 'INCIDENTS',
-      value: metrics.incidentRatio,
-      icon: AlertTriangle,
-      colorClass: 'text-[#F9A825]',
-    },
-    {
-      label: 'PEAK LOAD',
-      value: metrics.peakLoad,
-      icon: Zap,
-    },
-    {
-      label: 'SQUAD',
-      value: personCount > 60 ? '22 ACTV' : '14 ACTV',
-      icon: UserCheck,
-      colorClass: 'text-[#388E3C]',
-    },
+    { label: 'TOTAL PERS.',  value: metrics.totalPersonnel.toLocaleString(), icon: Users,         trend: `+${(personCount * 0.1).toFixed(1)}%` },
+    { label: 'FLOW RATE',    value: `${metrics.flowRate} p/m`,               icon: TrendingUp,    trend: personCount > 40 ? `-${((personCount - 40) * 0.5).toFixed(1)}%` : 'NORMAL' },
+    { label: 'AVG WAIT',     value: metrics.avgWaitTime,                     icon: Clock,         accentColor: NEON_AMBER },
+    { label: 'INCIDENTS',    value: metrics.incidentRatio,                   icon: AlertTriangle, accentColor: NEON_RED },
+    { label: 'PEAK LOAD',    value: metrics.peakLoad,                        icon: Zap,           accentColor: NEON_AMBER },
+    { label: 'SQUAD',        value: personCount > 60 ? '22 ACTV' : '14 ACTV', icon: UserCheck,   accentColor: NEON_CYAN },
   ];
 
   const capacityPct = Math.min(Math.round((metrics.totalPersonnel / 18000) * 100), 100);
+  const barColor    = capacityPct > 85 ? NEON_RED : capacityPct > 65 ? NEON_AMBER : NEON_CYAN;
 
   return (
-    <div className="grid grid-cols-2 gap-2 pb-4">
+    <div className="grid grid-cols-2 gap-1.5 pb-3">
       {cards.map((card, i) => (
         <MetricCard key={i} {...card} />
       ))}
 
-      {/* Capacity Bar — full width */}
-      <div className="col-span-2 glass-panel p-3 shadow-md">
+      {/* Capacity bar — full width */}
+      <div
+        className="col-span-2 rounded-xl p-3"
+        style={{
+          backgroundColor: 'rgba(18,18,18,0.85)',
+          backdropFilter: 'blur(10px)',
+          border: 'rgba(0,255,194,0.08) 1px solid',
+        }}
+      >
         <div className="flex justify-between items-center mb-2">
-          <span
-            className="text-[9px] font-bold tracking-widest"
-            style={{ color: 'var(--text-muted)' }}
-          >
+          <span className="text-[7px] font-mono font-bold tracking-[0.28em] uppercase"
+            style={{ color: LABEL_GREY }}>
             STATION CAPACITY
           </span>
-          <span
-            className={`text-[11px] font-mono font-bold ${
-              capacityPct > 85 ? 'text-[#FF1744]' : 'text-[#4FC3F7]'
-            }`}
-          >
+          <span className="text-[10px] font-mono font-black"
+            style={{ color: barColor, textShadow: `0 0 6px ${barColor}` }}>
             {capacityPct}%
           </span>
         </div>
-        {/* Segmented bar */}
-        <div className="flex gap-0.5 h-4">
+
+        <div className="flex gap-0.5 h-3">
           {[...Array(20)].map((_, i) => {
-            const segmentCap = (i + 1) * 5;
-            const isActive   = capacityPct >= segmentCap;
-            const isDanger   = segmentCap > 75;
+            const seg    = (i + 1) * 5;
+            const active = capacityPct >= seg;
+            const c      = seg > 85 ? NEON_RED : seg > 65 ? NEON_AMBER : NEON_CYAN;
             return (
-              <div
-                key={i}
-                className="flex-1 rounded-sm transition-colors duration-500"
+              <div key={i} className="flex-1 rounded-sm transition-colors duration-500"
                 style={{
-                  backgroundColor: isActive
-                    ? isDanger ? '#FF1744' : '#4FC3F7'
-                    : 'var(--bg-surface)',
-                }}
-              />
+                  backgroundColor: active ? c : 'rgba(255,255,255,0.04)',
+                  boxShadow: active ? `0 0 3px ${c}` : 'none',
+                }} />
             );
           })}
         </div>
-        <div
-          className="flex justify-between mt-1.5 text-[8px]"
-          style={{ color: 'var(--text-muted)' }}
-        >
-          <span>0%</span>
-          <span>75% OPTIMAL</span>
-          <span>MAX</span>
+
+        <div className="flex justify-between mt-1.5"
+          style={{ fontSize: '7px', fontFamily: 'JetBrains Mono, monospace', color: LABEL_GREY }}>
+          <span>0%</span><span>75% OPTIMAL</span><span>MAX</span>
         </div>
       </div>
     </div>

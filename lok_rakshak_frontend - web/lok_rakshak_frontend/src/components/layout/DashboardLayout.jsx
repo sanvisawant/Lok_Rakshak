@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Sun, Moon } from 'lucide-react';
+import { Sun, Moon, ShieldAlert } from 'lucide-react';
 import useDashboardStore from '../../store/useDashboardStore';
 import { useWebSocket } from '../../hooks/useWebSocket';
 import Sidebar from './Sidebar';
@@ -11,154 +11,181 @@ import MetricsGrid from '../widgets/MetricsGrid';
 import AlertOverlay from '../widgets/AlertOverlay';
 import '../../index.css';
 
-// Status → colour mapping reused across header
-const STATUS_COLORS = {
-  GREEN:    { text: 'text-[#388E3C]', label: 'NOMINAL // ACTIVE' },
-  YELLOW:   { text: 'text-[#F9A825]', label: 'ELEVATED // MONITORING' },
-  RED:      { text: 'text-[#FF1744]', label: 'THREAT // HITL ACTIVE' },
-  CRITICAL: { text: 'text-[#FF1744]', label: 'CRITICAL // NDMA LIVE' },
+const STATUS_META = {
+  GREEN:    { color: '#00FFC2', label: 'NOMINAL // ACTIVE' },
+  YELLOW:   { color: '#FFB300', label: 'ELEVATED // MONITORING' },
+  RED:      { color: '#FF3B3B', label: 'THREAT // HITL ACTIVE' },
+  CRITICAL: { color: '#FF3B3B', label: 'CRITICAL // NDMA LIVE' },
 };
 
 const LiveClock = () => {
-  const [time, setTime] = useState(new Date().toLocaleTimeString());
+  const [time, setTime] = useState(new Date().toLocaleTimeString('en-IN', { hour12: true }));
   useEffect(() => {
-    const t = setInterval(() => setTime(new Date().toLocaleTimeString()), 1000);
+    const t = setInterval(() =>
+      setTime(new Date().toLocaleTimeString('en-IN', { hour12: true })), 1000);
     return () => clearInterval(t);
   }, []);
-  return <span className="text-sm font-mono" style={{ color: 'var(--text-secondary)' }}>{time}</span>;
+  return (
+    <span
+      className="text-[12px] font-mono tabular-nums"
+      style={{ color: 'var(--accent-primary)', letterSpacing: '0.1em' }}
+    >
+      {time}
+    </span>
+  );
 };
+
+const Divider = () => (
+  <div style={{ width: 1, height: 26, backgroundColor: 'var(--border-subtle)' }} />
+);
 
 const DashboardLayout = ({ theme, toggleTheme }) => {
   const { criticalAlert, systemStatus, wsConnected } = useDashboardStore();
   useWebSocket();
 
-  const statusMeta = STATUS_COLORS[systemStatus] || STATUS_COLORS.GREEN;
-  const isCritical = systemStatus === 'CRITICAL' || systemStatus === 'RED';
+  const statusMeta = STATUS_META[systemStatus] || STATUS_META.GREEN;
+  const isCritical  = systemStatus === 'CRITICAL' || systemStatus === 'RED';
 
   return (
     <div
-      className={`flex h-screen w-screen overflow-hidden transition-all duration-700 ${
-        isCritical ? 'ring-2 ring-inset ring-[#FF1744]/40' : ''
+      className={`flex h-screen w-screen overflow-hidden ${
+        isCritical ? 'ring-2 ring-inset ring-[#FF3B3B]/35' : ''
       }`}
       style={{ backgroundColor: 'var(--bg-main)', color: 'var(--text-primary)' }}
     >
-      {/* Navigation Sidebar */}
       <Sidebar />
 
-      {/* Main Dashboard Area */}
       <main className="flex-1 flex flex-col relative overflow-hidden">
 
-        {/* ── Header ── */}
+        {/* ── Aero-Tech Header ─────────────────────────────────── */}
         <header
-          className="flex-shrink-0 flex items-center justify-between px-6 transition-all duration-500"
+          className="flex-shrink-0 flex items-center justify-between px-5 transition-all duration-500"
           style={{
             height: 'var(--header-height)',
             backgroundColor:
-              systemStatus === 'CRITICAL' ? 'rgba(211,47,47,0.18)' :
-              systemStatus === 'RED'      ? 'rgba(180,30,30,0.12)' :
-              systemStatus === 'YELLOW'   ? 'rgba(249,168,37,0.10)' :
-              'var(--bg-panel)',
-            borderBottom: '1px solid var(--border-faint)',
+              isCritical         ? 'rgba(255,59,59,0.10)' :
+              systemStatus === 'YELLOW' ? 'rgba(255,179,0,0.07)' :
+              'rgba(16,16,16,0.95)',
+            borderBottom: `1px solid ${isCritical ? 'rgba(255,59,59,0.25)' : 'var(--border-faint)'}`,
+            backdropFilter: 'blur(12px)',
           }}
         >
-          {/* Left: Brand */}
+          {/* ── LEFT: Brand ──────────────────────────────── */}
           <div className="flex items-center gap-3">
-            <h1 className="text-lg font-black tracking-[0.18em]" style={{ color: 'var(--accent-primary)' }}>
-              LOK-RAKSHAK
-            </h1>
-            <span
-              className="text-[10px] font-mono tracking-widest hidden md:block"
-              style={{ color: 'var(--text-muted)' }}
+            {/* Glyph */}
+            <div
+              className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+              style={{
+                border: '1px solid var(--accent-primary)',
+                boxShadow: '0 0 12px rgba(0,255,194,0.2)',
+                backgroundColor: 'rgba(0,255,194,0.06)',
+              }}
             >
-              // ICCC COMMAND CENTER
-            </span>
+              <ShieldAlert size={16} style={{ color: 'var(--accent-primary)' }} />
+            </div>
+
+            {/* Logo text */}
+            <div className="flex flex-col leading-none">
+              <span
+                className="text-[15px] font-black tracking-[0.22em] font-mono"
+                style={{
+                  color: '#FFFFFF',
+                  textShadow: '0 0 18px rgba(0,255,194,0.25)',
+                }}
+              >
+                LOK-<span style={{ color: 'var(--accent-primary)' }}>RAKSHAK</span>
+              </span>
+              <span
+                className="text-[8px] font-mono tracking-[0.4em] mt-0.5"
+                style={{ color: 'var(--text-muted)' }}
+              >
+                ICCC · COMMAND CENTER
+              </span>
+            </div>
           </div>
 
-          {/* Right: Status row */}
-          <div className="flex items-center gap-5">
+          {/* ── RIGHT: Status cluster ────────────────────── */}
+          <div className="flex items-center gap-4">
 
-            {/* WS indicator */}
+            {/* Brain link */}
             <div className="flex items-center gap-2">
               <div
-                className={`w-2 h-2 rounded-full ${wsConnected ? 'animate-pulse' : ''}`}
+                className={`w-1.5 h-1.5 rounded-full ${wsConnected ? 'animate-pulse' : ''}`}
                 style={{ backgroundColor: wsConnected ? 'var(--status-safe)' : 'var(--status-danger)' }}
               />
-              <span className="text-[9px] font-mono tracking-widest" style={{ color: 'var(--text-muted)' }}>
-                {wsConnected ? 'BRAIN_LINK_LIVE' : 'BRAIN_LINK_DOWN'}
+              <span className="text-[8px] font-mono tracking-[0.25em]" style={{ color: 'var(--text-muted)' }}>
+                {wsConnected ? 'BRAIN_LINK·LIVE' : 'BRAIN_LINK·DOWN'}
               </span>
             </div>
 
-            <div style={{ width: 1, height: 28, backgroundColor: 'var(--border-subtle)' }} />
+            <Divider />
 
             {/* System status */}
-            <div className="text-right">
-              <div className="text-[9px] tracking-widest" style={{ color: 'var(--text-muted)' }}>SYSTEM STATUS</div>
-              <div className={`text-[11px] font-mono font-bold ${statusMeta.text}`}>
+            <div className="flex flex-col items-end gap-0.5">
+              <span className="text-[7px] font-mono tracking-[0.3em]" style={{ color: 'var(--text-muted)' }}>
+                SYS·STATUS
+              </span>
+              <span
+                className="text-[10px] font-mono font-black tracking-widest"
+                style={{ color: statusMeta.color, textShadow: `0 0 8px ${statusMeta.color}` }}
+              >
                 {statusMeta.label}
-              </div>
+              </span>
             </div>
 
-            <div style={{ width: 1, height: 28, backgroundColor: 'var(--border-subtle)' }} />
+            <Divider />
 
             <LiveClock />
 
-            <div style={{ width: 1, height: 28, backgroundColor: 'var(--border-subtle)' }} />
+            <Divider />
 
             {/* Theme Toggle */}
             <button
-              onClick={toggleTheme}
               id="theme-toggle-btn"
+              onClick={toggleTheme}
               title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-              className="p-2 rounded-lg transition-all duration-300 hover:scale-110"
+              className="w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-300 hover:scale-110"
               style={{
-                backgroundColor: 'var(--bg-surface)',
+                backgroundColor: 'rgba(0,255,194,0.06)',
                 border: '1px solid var(--border-subtle)',
-                color: 'var(--text-secondary)',
+                color: 'var(--accent-primary)',
               }}
             >
-              {theme === 'dark'
-                ? <Sun size={15} />
-                : <Moon size={15} />
-              }
+              {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
             </button>
           </div>
         </header>
 
-        {/* ── Dashboard Body — 12 col grid ── */}
+        {/* ── Dashboard Body ────────────────────────────────────── */}
         <div
-          className="flex-1 grid grid-cols-12 gap-5 p-5 overflow-hidden"
-          style={{
-            background: 'radial-gradient(circle at 30% 50%, var(--bg-panel) 0%, var(--bg-main) 100%)',
-          }}
+          className="flex-1 grid grid-cols-12 gap-4 p-4 overflow-hidden"
+          style={{ backgroundColor: 'var(--bg-main)' }}
         >
-          {/* Left: Camera (7 cols) */}
-          <section className="col-span-7 flex flex-col gap-4 overflow-hidden">
+          {/* Cameras — 7 cols */}
+          <section className="col-span-7 flex flex-col gap-3 overflow-hidden">
             <CameraGrid />
           </section>
 
-          {/* Middle: Risk + Metrics (2 cols) */}
-          <section className="col-span-2 flex flex-col gap-4 overflow-hidden">
-            <div className="h-[55%] flex-shrink-0">
+          {/* Risk + Metrics — 2 cols */}
+          <section className="col-span-2 flex flex-col gap-3 overflow-hidden">
+            <div className="h-[54%] flex-shrink-0">
               <RiskMeter />
             </div>
-            <div className="flex-1 overflow-y-auto custom-scrollbar pr-1">
+            <div className="flex-1 overflow-y-auto custom-scrollbar pr-0.5">
               <MetricsGrid />
             </div>
           </section>
 
-          {/* Right: Spatial (3 cols) */}
-          <section className="col-span-3 flex flex-col overflow-hidden">
-            <div className="flex-1 relative overflow-hidden modern-card">
-              <SpatialAwareness />
-            </div>
+          {/* Spatial — 3 cols */}
+          <section className="col-span-3 flex flex-col overflow-hidden rounded-xl"
+            style={{ border: '1px solid var(--border-subtle)' }}>
+            <SpatialAwareness />
           </section>
         </div>
 
-        {/* Global Alert Overlay */}
         {criticalAlert && <AlertOverlay />}
       </main>
 
-      {/* Slide-out Drawer */}
       <RightDrawer />
     </div>
   );

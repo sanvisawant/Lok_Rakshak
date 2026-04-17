@@ -1,52 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const BOOT_MESSAGES = [
-  "Initializing AI Risk Engine...",
-  "Connecting to CCTV Feeds...",
-  "Syncing Urban Mobility Network...",
-  "Calibrating Vector Models...",
-  "Establishing Secure Uplink...",
-  "System Ready.",
-];
-
-// City nodes — mapped to SVG viewBox "0 0 260 310"
-// Real approx geographic placement
-const CITY_NODES = [
-  { id: 'delhi',     cx: 100, cy: 88,  label: 'DEL',  delay: 0.3 },
-  { id: 'mumbai',    cx: 52,  cy: 188, label: 'BOM',  delay: 0.6 },
-  { id: 'bangalore', cx: 102, cy: 248, label: 'BLR',  delay: 0.9 },
-  { id: 'kolkata',   cx: 182, cy: 148, label: 'CCU',  delay: 0.5 },
-  { id: 'chennai',   cx: 128, cy: 246, label: 'MAA',  delay: 0.7 },
-  { id: 'hyderabad', cx: 112, cy: 212, label: 'HYD',  delay: 0.4 },
-  { id: 'lucknow',   cx: 132, cy: 106, label: 'LKO',  delay: 0.5 },
-  { id: 'srinagar',  cx: 70,  cy: 30,  label: 'SXR',  delay: 0.2 },
-  { id: 'guwahati',  cx: 214, cy: 112, label: 'GAU',  delay: 0.8 },
-  { id: 'pune',      cx: 64,  cy: 205, label: 'PNQ',  delay: 0.45 },
-];
-
-// Sparse connections — only major ones to keep it clean
-const CONNECTIONS = [
-  ['delhi', 'mumbai'],
-  ['delhi', 'kolkata'],
-  ['delhi', 'lucknow'],
-  ['delhi', 'hyderabad'],
-  ['mumbai', 'bangalore'],
-  ['bangalore', 'chennai'],
-  ['hyderabad', 'bangalore'],
-  ['kolkata', 'guwahati'],
-];
-
-// India SVG path — simplified outline, clockwise from J&K
-// ViewBox: "0 0 260 310"
+/* ──────────────────────────────────────────────────────────────────
+   INDIA PATH — SVG viewBox "0 0 260 310"
+   Simplified clockwise outline from J&K → South tip → NE
+────────────────────────────────────────────────────────────────── */
 const INDIA_PATH = `
-  M 80,14
-  C 88,8 102,6 118,8
-  L 138,10 L 158,14 L 178,19
-  C 195,24 212,32 226,46
-  L 234,62 L 236,80
-  C 234,93 224,100 215,96
-  L 205,88
+  M 80,14 C 88,8 102,6 118,8 L 138,10 L 158,14 L 178,19
+  C 195,24 212,32 226,46 L 234,62 L 236,80
+  C 234,93 224,100 215,96 L 205,88
   C 200,96 208,112 222,128
   C 232,142 240,158 238,174
   C 233,180 222,177 214,183
@@ -60,290 +22,284 @@ const INDIA_PATH = `
   C 30,126 22,114 26,102
   C 30,90 44,82 56,75
   C 64,65 60,52 64,40
-  C 68,28 76,18 80,14
-  Z
+  C 68,28 76,18 80,14 Z
 `.trim();
 
-// Lat/Lon grid config — where lines fall in SVG coords
-// Latitude: 10°N=290, 15°N=233, 20°N=176, 25°N=119, 30°N=62
-// Longitude: 70°E=26, 75°E=71, 80°E=116, 85°E=161, 90°E=206
-const LAT_LINES = [
-  { y: 62,  label: '30°N' },
-  { y: 119, label: '25°N' },
-  { y: 176, label: '20°N' },
-  { y: 233, label: '15°N' },
+/* City coordinates */
+const CITIES = [
+  { id: 'delhi',     cx: 100, cy: 88,  label: 'DEL', delay: 0.3 },
+  { id: 'mumbai',    cx: 52,  cy: 188, label: 'BOM', delay: 0.6 },
+  { id: 'bangalore', cx: 102, cy: 248, label: 'BLR', delay: 0.9 },
+  { id: 'kolkata',   cx: 182, cy: 148, label: 'CCU', delay: 0.5 },
+  { id: 'chennai',   cx: 128, cy: 246, label: 'MAA', delay: 0.7 },
+  { id: 'hyderabad', cx: 112, cy: 212, label: 'HYD', delay: 0.4 },
+  { id: 'lucknow',   cx: 132, cy: 106, label: 'LKO', delay: 0.5 },
+  { id: 'srinagar',  cx: 70,  cy: 30,  label: 'SXR', delay: 0.2 },
+  { id: 'guwahati',  cx: 214, cy: 112, label: 'GAU', delay: 0.8 },
 ];
-const LON_LINES = [
-  { x: 26,  label: '70°E' },
-  { x: 71,  label: '75°E' },
-  { x: 116, label: '80°E' },
-  { x: 161, label: '85°E' },
-  { x: 206, label: '90°E' },
+
+const CONNECTIONS = [
+  ['delhi', 'mumbai'], ['delhi', 'kolkata'], ['delhi', 'lucknow'],
+  ['delhi', 'hyderabad'], ['mumbai', 'bangalore'], ['bangalore', 'chennai'],
+  ['hyderabad', 'bangalore'], ['kolkata', 'guwahati'],
 ];
+
+const BOOT_MSGS = [
+  'Initializing AI Risk Engine...',
+  'Connecting to CCTV Feeds...',
+  'Syncing Urban Mobility Network...',
+  'Calibrating Vector Models...',
+  'Establishing Secure Uplink...',
+  'SYSTEM READY.',
+];
+
+/* Coordinate grid lines */
+const LAT_LINES = [{ y: 62, label: '30°N' }, { y: 119, label: '25°N' }, { y: 176, label: '20°N' }, { y: 233, label: '15°N' }];
+const LON_LINES = [{ x: 26, label: '70°E' }, { x: 71, label: '75°E' }, { x: 116, label: '80°E' }, { x: 161, label: '85°E' }, { x: 206, label: '90°E' }];
+
+const NEON_CYAN = '#00FFC2';
 
 const LandingScreen = ({ onComplete }) => {
   const [msgIndex, setMsgIndex] = useState(0);
-  const [exiting, setExiting] = useState(false);
+  const [exiting,  setExiting]  = useState(false);
 
-  // Cycle boot messages
   useEffect(() => {
     if (exiting) return;
-    const interval = setInterval(() => {
-      setMsgIndex((prev) =>
-        prev < BOOT_MESSAGES.length - 1 ? prev + 1 : prev
-      );
-    }, 700);
-    return () => clearInterval(interval);
+    const iv = setInterval(() =>
+      setMsgIndex(p => p < BOOT_MSGS.length - 1 ? p + 1 : p), 700);
+    return () => clearInterval(iv);
   }, [exiting]);
 
-  // Trigger exit after 5s
   useEffect(() => {
-    const timer = setTimeout(() => {
+    const t = setTimeout(() => {
       setExiting(true);
       setTimeout(onComplete, 600);
-    }, 5000);
-    return () => clearTimeout(timer);
+    }, 5200);
+    return () => clearTimeout(t);
   }, [onComplete]);
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
-      animate={{ opacity: 1, scale: exiting ? 1.08 : 1, filter: exiting ? 'blur(8px)' : 'none' }}
-      transition={{ duration: 0.6, ease: 'easeInOut' }}
-      className="fixed inset-0 z-[999] flex flex-col items-center justify-center overflow-hidden"
-      style={{ background: 'radial-gradient(ellipse at center, #0D2036 0%, #060F18 100%)' }}
+      animate={{ opacity: 1, scale: exiting ? 1.06 : 1, filter: exiting ? 'blur(8px)' : 'none' }}
+      transition={{ duration: 0.55, ease: 'easeInOut' }}
+      className="fixed inset-0 z-[999] overflow-hidden flex items-center justify-center"
+      style={{ backgroundColor: '#0D0D0D' }}
     >
-      {/* Subtle animated scanning line */}
-      <motion.div
-        initial={{ y: '-100%' }}
-        animate={{ y: '200%' }}
-        transition={{ duration: 5, ease: 'linear', repeat: Infinity }}
-        className="absolute inset-x-0 h-40 pointer-events-none z-10"
+
+      {/* ── BACKGROUND: India wireframe map (full-screen, faint) ── */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
+        <svg
+          viewBox="-30 -20 320 350"
+          style={{ width: '70vmin', height: '70vmin', maxWidth: 640, maxHeight: 720 }}
+          className="opacity-[0.09]"
+        >
+          <defs>
+            {/* Clip India shape */}
+            <clipPath id="indiaClipBg">
+              <path d={INDIA_PATH} />
+            </clipPath>
+            {/* Grid pattern inside India */}
+            <pattern id="indiaTechGrid" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+              <path d="M 20 0 L 0 0 0 20" fill="none" stroke={NEON_CYAN} strokeWidth="0.4" />
+            </pattern>
+          </defs>
+
+          {/* Interior wireframe grid */}
+          <rect x="-30" y="-20" width="320" height="350"
+            fill="url(#indiaTechGrid)"
+            clipPath="url(#indiaClipBg)"
+          />
+          {/* Outline */}
+          <path d={INDIA_PATH} fill="none" stroke={NEON_CYAN} strokeWidth="1.5" />
+        </svg>
+      </div>
+
+      {/* ── COORDINATE GRID (full-screen faint lines) ── */}
+      <div
+        className="absolute inset-0 pointer-events-none"
         style={{
-          background: 'linear-gradient(to bottom, transparent, rgba(79,195,247,0.04), transparent)',
+          backgroundImage: `
+            linear-gradient(rgba(0,255,194,0.025) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0,255,194,0.025) 1px, transparent 1px)
+          `,
+          backgroundSize: '60px 60px',
         }}
       />
 
-      {/* ── MAIN LAYOUT ── spacious, centered */}
-      <div className="relative z-20 flex flex-col items-center gap-12 px-8 w-full max-w-3xl">
+      {/* ── SCAN LINE ── */}
+      <motion.div
+        className="absolute inset-x-0 h-32 pointer-events-none"
+        initial={{ y: '-100%' }}
+        animate={{ y: '150vh' }}
+        transition={{ duration: 5.2, ease: 'linear', repeat: Infinity }}
+        style={{ background: 'linear-gradient(to bottom, transparent, rgba(0,255,194,0.03), transparent)' }}
+      />
 
-        {/* TOP: Titles */}
+      {/* ── HUD PANEL (floating glassmorphism) ── */}
+      <div className="relative z-10 flex flex-col" style={{ width: 360 }}>
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.8 }}
-          className="text-center"
+          transition={{ delay: 0.3, duration: 0.8 }}
+          style={{
+            backgroundColor: 'rgba(13,13,13,0.82)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            border: `1px solid rgba(0,255,194,0.15)`,
+            borderRadius: '1.5rem',
+            boxShadow: '0 0 60px rgba(0,255,194,0.06), 0 32px 64px rgba(0,0,0,0.7)',
+            padding: '36px 32px 28px',
+          }}
         >
-          <h1
-            className="text-5xl font-black tracking-[0.25em] mb-3"
-            style={{
-              color: '#4FC3F7',
-              textShadow: '0 0 40px rgba(79,195,247,0.3)',
-            }}
-          >
-            LOK-RAKSHAK
-          </h1>
-          <p className="text-[13px] tracking-[0.5em] text-[#B0BEC5] uppercase mb-2">
-            National Crowd Intelligence Grid
-          </p>
-          <p className="text-[11px] tracking-[0.35em] text-[#546E7A] uppercase">
-            Monitoring • Predicting • Preventing
-          </p>
-        </motion.div>
-
-        {/* CENTRE: India Map */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.5, duration: 1.0 }}
-          className="relative"
-          style={{ width: 260, height: 310 }}
-        >
-          <svg
-            viewBox="0 0 260 310"
-            width="260"
-            height="310"
-            className="overflow-visible"
-          >
-            {/* Lat/Lon grid */}
-            <defs>
-              <clipPath id="indiaClip">
-                <path d={INDIA_PATH} />
-              </clipPath>
-            </defs>
-
-            {/* Horizontal latitude lines */}
-            {LAT_LINES.map((l) => (
-              <g key={l.label}>
-                <line
-                  x1={0} y1={l.y} x2={260} y2={l.y}
-                  stroke="#4FC3F7" strokeWidth="0.5"
-                  strokeDasharray="3 6"
-                  strokeOpacity="0.12"
+          {/* Top: status row */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2">
+              <motion.div
+                className="w-1.5 h-1.5 rounded-full"
+                style={{ backgroundColor: NEON_CYAN }}
+                animate={{ opacity: [1, 0.2, 1] }}
+                transition={{ duration: 1.2, repeat: Infinity }}
+              />
+              <span style={{ fontSize: 9, fontFamily: 'JetBrains Mono, monospace', color: 'rgba(0,255,194,0.5)', letterSpacing: '0.35em' }}>
+                SYSTEM ONLINE
+              </span>
+            </div>
+            <div className="flex gap-1 items-center">
+              {[...Array(3)].map((_, i) => (
+                <motion.div key={i} className="w-1 h-1 rounded-full"
+                  style={{ backgroundColor: NEON_CYAN }}
+                  animate={{ opacity: [0.2, 1, 0.2] }}
+                  transition={{ duration: 1, repeat: Infinity, delay: i * 0.25 }}
                 />
-                <text
-                  x={-4} y={l.y + 3}
-                  textAnchor="end"
-                  fontSize="6"
-                  fill="#4FC3F7"
-                  fillOpacity="0.35"
-                  fontFamily="monospace"
-                >
-                  {l.label}
-                </text>
-              </g>
-            ))}
+              ))}
+            </div>
+          </div>
 
-            {/* Vertical longitude lines */}
-            {LON_LINES.map((l) => (
-              <g key={l.label}>
-                <line
-                  x1={l.x} y1={0} x2={l.x} y2={310}
-                  stroke="#4FC3F7" strokeWidth="0.5"
-                  strokeDasharray="3 6"
-                  strokeOpacity="0.12"
-                />
-                <text
-                  x={l.x} y={-4}
-                  textAnchor="middle"
-                  fontSize="6"
-                  fill="#4FC3F7"
-                  fillOpacity="0.35"
-                  fontFamily="monospace"
-                >
-                  {l.label}
-                </text>
-              </g>
-            ))}
+          {/* Brand title */}
+          <div className="text-center mb-2">
+            <h1
+              style={{
+                fontFamily: 'JetBrains Mono, monospace',
+                fontSize: 32,
+                fontWeight: 900,
+                letterSpacing: '0.2em',
+                lineHeight: 1,
+                color: '#FFFFFF',
+              }}
+            >
+              LOK-<span style={{ color: NEON_CYAN, textShadow: `0 0 20px ${NEON_CYAN}` }}>RAKSHAK</span>
+            </h1>
+            <p style={{
+              fontFamily: 'JetBrains Mono, monospace',
+              fontSize: 8,
+              letterSpacing: '0.45em',
+              color: '#7A7A7A',
+              marginTop: 8,
+              textTransform: 'uppercase',
+            }}>
+              National Crowd Intelligence Grid
+            </p>
+          </div>
 
-            {/* India fill (very subtle) */}
-            <motion.path
-              d={INDIA_PATH}
-              fill="#4FC3F7"
-              fillOpacity={0.04}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.8, duration: 1 }}
-            />
+          {/* Divider */}
+          <div style={{ height: 1, backgroundColor: 'rgba(0,255,194,0.08)', margin: '20px 0' }} />
 
-            {/* India outline */}
-            <motion.path
-              d={INDIA_PATH}
-              fill="none"
-              stroke="#4FC3F7"
-              strokeWidth="1.2"
-              strokeOpacity="0.55"
-              initial={{ pathLength: 0, opacity: 0 }}
-              animate={{ pathLength: 1, opacity: 1 }}
-              transition={{ delay: 0.6, duration: 2.5, ease: 'easeInOut' }}
-            />
+          {/* India mini-map reference */}
+          <div className="flex items-center justify-center mb-5">
+            <svg viewBox="-10 -10 280 330" style={{ width: 90, height: 108 }}>
+              {/* Mini city nodes */}
+              {CONNECTIONS.map(([n1, n2], idx) => {
+                const s = CITIES.find(c => c.id === n1);
+                const e = CITIES.find(c => c.id === n2);
+                if (!s || !e) return null;
+                return (
+                  <line key={idx}
+                    x1={s.cx} y1={s.cy} x2={e.cx} y2={e.cy}
+                    stroke={NEON_CYAN} strokeWidth="0.6" strokeOpacity="0.15" strokeDasharray="2 4"
+                  />
+                );
+              })}
+              {/* Coordinate lat lines */}
+              {LAT_LINES.map(l => (
+                <line key={l.label} x1={0} y1={l.y} x2={260} y2={l.y}
+                  stroke={NEON_CYAN} strokeWidth="0.4" strokeOpacity="0.08" strokeDasharray="2 5" />
+              ))}
+              {LON_LINES.map(l => (
+                <line key={l.label} x1={l.x} y1={0} x2={l.x} y2={310}
+                  stroke={NEON_CYAN} strokeWidth="0.4" strokeOpacity="0.08" strokeDasharray="2 5" />
+              ))}
 
-            {/* Connecting lines */}
-            {CONNECTIONS.map(([n1, n2], idx) => {
-              const start = CITY_NODES.find((n) => n.id === n1);
-              const end   = CITY_NODES.find((n) => n.id === n2);
-              if (!start || !end) return null;
-              return (
-                <motion.line
-                  key={idx}
-                  x1={start.cx} y1={start.cy}
-                  x2={end.cx}   y2={end.cy}
-                  stroke="#4FC3F7"
-                  strokeWidth="0.6"
-                  strokeOpacity="0.2"
-                  strokeDasharray="2 4"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 1.5 + idx * 0.12, duration: 0.6 }}
-                />
-              );
-            })}
+              {/* Outline */}
+              <motion.path d={INDIA_PATH} fill="rgba(0,255,194,0.04)" stroke={NEON_CYAN}
+                strokeWidth="1.2" strokeOpacity="0.45"
+                initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}
+                transition={{ delay: 0.5, duration: 2, ease: 'easeInOut' }}
+              />
 
-            {/* City nodes */}
-            {CITY_NODES.map((node) => (
-              <g key={node.id}>
-                {/* Pulse ring */}
-                <motion.circle
-                  cx={node.cx} cy={node.cy} r={7}
-                  fill="none"
-                  stroke="#4FC3F7"
-                  strokeWidth="1"
-                  initial={{ opacity: 0, scale: 0 }}
-                  animate={{ opacity: [0, 0.5, 0], scale: [0.8, 1.8, 0.8] }}
-                  transition={{ duration: 2.5, repeat: Infinity, delay: node.delay, repeatDelay: 0.5 }}
-                />
-                {/* Core dot */}
-                <motion.circle
-                  cx={node.cx} cy={node.cy} r={2.5}
-                  fill="#E3F2FD"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 1.2 + node.delay, duration: 0.4 }}
-                />
-                {/* Label */}
-                <motion.text
-                  x={node.cx + 5} y={node.cy + 3}
-                  fontSize="6"
-                  fill="#78909C"
-                  fontFamily="monospace"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 0.75 }}
-                  transition={{ delay: 1.5 + node.delay, duration: 0.4 }}
-                >
-                  {node.label}
-                </motion.text>
-              </g>
-            ))}
-          </svg>
-        </motion.div>
+              {/* City dots */}
+              {CITIES.map(node => (
+                <g key={node.id}>
+                  <motion.circle cx={node.cx} cy={node.cy} r={6}
+                    fill="none" stroke={NEON_CYAN} strokeWidth="0.8"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: [0, 0.4, 0], scale: [0.8, 1.6, 0.8] }}
+                    transition={{ duration: 2, repeat: Infinity, delay: node.delay }}
+                  />
+                  <circle cx={node.cx} cy={node.cy} r={2} fill={NEON_CYAN} fillOpacity={0.8} />
+                </g>
+              ))}
+            </svg>
+          </div>
 
-        {/* BOTTOM: Boot Message */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8, duration: 0.7 }}
-          className="flex flex-col items-center gap-6 w-full max-w-md"
-        >
           {/* Progress bar */}
-          <div className="w-full h-px bg-[#1B3F63]/60 overflow-hidden rounded-full">
+          <div style={{ height: 1, backgroundColor: 'rgba(0,255,194,0.07)', borderRadius: 999, overflow: 'hidden', marginBottom: 12 }}>
             <motion.div
-              className="h-full bg-[#4FC3F7]"
+              style={{ height: '100%', backgroundColor: NEON_CYAN, boxShadow: `0 0 6px ${NEON_CYAN}` }}
               initial={{ width: '0%' }}
               animate={{ width: '100%' }}
-              transition={{ duration: 4.8, ease: 'easeInOut' }}
+              transition={{ duration: 5, ease: 'linear' }}
             />
           </div>
 
-          {/* Cycling text */}
-          <div
-            className="flex items-center gap-3 px-6 py-3 rounded-xl w-full justify-center"
-            style={{
-              background: 'rgba(19,47,76,0.5)',
-              border: '1px solid rgba(79,195,247,0.12)',
-              backdropFilter: 'blur(12px)',
-            }}
-          >
+          {/* Boot message */}
+          <div className="flex items-center gap-2.5" style={{
+            backgroundColor: 'rgba(0,255,194,0.04)',
+            border: '1px solid rgba(0,255,194,0.1)',
+            borderRadius: 10,
+            padding: '10px 14px',
+          }}>
             <motion.div
-              className="w-1.5 h-1.5 rounded-full bg-[#00E5FF]"
-              animate={{ opacity: [1, 0.3, 1] }}
-              transition={{ duration: 1, repeat: Infinity }}
+              className="w-1 h-1 rounded-full flex-shrink-0"
+              style={{ backgroundColor: NEON_CYAN }}
+              animate={{ opacity: [1, 0.2, 1] }}
+              transition={{ duration: 0.8, repeat: Infinity }}
             />
             <AnimatePresence mode="wait">
               <motion.span
                 key={msgIndex}
-                initial={{ opacity: 0, y: 4 }}
+                initial={{ opacity: 0, y: 3 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
-                transition={{ duration: 0.25 }}
-                className="text-[11px] font-mono tracking-wider"
-                style={{ color: '#00E5FF' }}
+                exit={{ opacity: 0, y: -3 }}
+                transition={{ duration: 0.2 }}
+                style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: NEON_CYAN, letterSpacing: '0.06em' }}
               >
-                {BOOT_MESSAGES[msgIndex]}
+                {BOOT_MSGS[msgIndex]}
               </motion.span>
             </AnimatePresence>
           </div>
         </motion.div>
 
+        {/* Below panel: sub-labels */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.5 }}
+          className="text-center mt-5"
+          style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 8, letterSpacing: '0.4em', color: 'rgba(0,255,194,0.22)' }}
+        >
+          MONITORING · PREDICTING · PREVENTING
+        </motion.div>
       </div>
     </motion.div>
   );

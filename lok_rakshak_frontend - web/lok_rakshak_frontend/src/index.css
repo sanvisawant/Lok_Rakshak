@@ -1,78 +1,82 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;0,800;1,400&family=Inter:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
-/* ─── Design Tokens ─────────────────────────────────────── */
+/* ─── Aero-Tech HUD Design Tokens ──────────────────────────── */
 :root {
-  /* Core palette — DARK MODE (default) */
-  --bg-main:        #071622;
-  --bg-panel:       #132F4C;
-  --bg-panel-light: #1B3F63;
-  --bg-surface:     #0B1E2D;
+  /* ── Core Palette ── */
+  --bg-main:        #0D0D0D;
+  --bg-panel:       #161616;
+  --bg-panel-light: #1C1C1C;
+  --bg-surface:     #111111;
 
-  --accent-primary:   #4FC3F7;
-  --accent-secondary: #00E5FF;
+  /* ── Neon Accents ── */
+  --accent-primary:   #00FFC2;
+  --accent-secondary: #00E5D4;
+  --accent-dim:       rgba(0, 255, 194, 0.12);
 
-  --status-safe:     #388E3C;
-  --status-warning:  #F9A825;
-  --status-danger:   #D32F2F;
+  /* ── Status Colors (semantic, preserved) ── */
+  --status-safe:     #00FFC2;
+  --status-warning:  #FFB300;
+  --status-danger:   #FF3B3B;
   --status-critical: #FF1744;
 
-  --text-primary:   #E3F2FD;
-  --text-secondary: #B0BEC5;
-  --text-muted:     #78909C;
+  /* ── Typography ── */
+  --text-primary:   #E8F5F2;
+  --text-secondary: #A0B8B2;
+  --text-muted:     rgba(0, 255, 194, 0.38);
 
-  --border-subtle:  rgba(27, 63, 99, 0.5);
-  --border-faint:   rgba(27, 63, 99, 0.25);
+  /* ── Borders ── */
+  --border-subtle:  rgba(0, 255, 194, 0.10);
+  --border-faint:   rgba(0, 255, 194, 0.06);
 
-  /* Layout */
+  /* ── Shadows / Glows ── */
+  --shadow-card:   0 4px 24px rgba(0, 0, 0, 0.7);
+  --shadow-glow:   0 0 18px rgba(0, 255, 194, 0.12);
+  --glow-accent:   0 0 12px rgba(0, 255, 194, 0.25);
+
+  /* ── Fonts ── */
+  --font-main: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* ── Layout ── */
   --sidebar-width: 80px;
-  --header-height: 60px;
+  --header-height: 58px;
   --drawer-width:  480px;
 
-  /* Shadows */
-  --shadow-card:   0 8px 24px rgba(0, 0, 0, 0.3);
-  --shadow-glow:   0 0 16px rgba(79, 195, 247, 0.15);
-
-  /* Fonts */
-  --font-main: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-mono: 'Roboto Mono', monospace;
-
-  /* Theme transition */
-  --theme-transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+  /* ── Transitions ── */
+  --theme-transition: background-color 0.35s ease, color 0.35s ease, border-color 0.35s ease;
 }
 
-/* ─── LIGHT MODE overrides ──────────────────────────────── */
+/* ─── Light Mode overrides (preserving semantic palette) ─── */
 html.light-mode {
-  --bg-main:        #EFF3F8;
+  --bg-main:        #F0F4F3;
   --bg-panel:       #FFFFFF;
-  --bg-panel-light: #DDE6F0;
-  --bg-surface:     #F5F8FC;
+  --bg-panel-light: #E4EDEA;
+  --bg-surface:     #F7FAF9;
 
-  --accent-primary:   #1565C0;
-  --accent-secondary: #0277BD;
+  --accent-primary:   #00897B;
+  --accent-secondary: #00796B;
+  --accent-dim:       rgba(0, 137, 123, 0.1);
 
-  --status-safe:     #2E7D32;
+  --status-safe:     #00897B;
   --status-warning:  #E65100;
-  --status-danger:   #B71C1C;
-  --status-critical: #D50000;
+  --status-danger:   #C62828;
+  --status-critical: #B71C1C;
 
-  --text-primary:   #0D1B2A;
-  --text-secondary: #37474F;
-  --text-muted:     #607D8B;
+  --text-primary:   #0D1F1C;
+  --text-secondary: #2E4A45;
+  --text-muted:     rgba(0,137,123,0.55);
 
-  --border-subtle:  rgba(21, 101, 192, 0.2);
-  --border-faint:   rgba(21, 101, 192, 0.1);
+  --border-subtle:  rgba(0, 137, 123, 0.15);
+  --border-faint:   rgba(0, 137, 123, 0.08);
 
-  --shadow-card:   0 4px 16px rgba(0, 0, 0, 0.08);
-  --shadow-glow:   0 0 12px rgba(21, 101, 192, 0.1);
+  --shadow-card:   0 2px 12px rgba(0,0,0,0.08);
+  --shadow-glow:   0 0 10px rgba(0,137,123,0.1);
+  --glow-accent:   0 0 8px rgba(0,137,123,0.15);
 }
 
-/* ─── Reset ─────────────────────────────────────────────── */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+/* ─── Reset ──────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body {
   transition: var(--theme-transition);
@@ -87,9 +91,19 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ─── Card Utilities ─────────────────────────────────────── */
+/* Monospace for all data/code elements */
+code, pre,
+.font-mono,
+[class*="font-mono"],
+[style*="font-mono"] {
+  font-family: var(--font-mono) !important;
+}
+
+/* ─── Glassmorphism Card ─────────────────────────────────── */
 .modern-card {
-  background: var(--bg-panel);
+  background: rgba(22, 22, 22, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border: 1px solid var(--border-subtle);
   border-radius: 0.875rem;
   box-shadow: var(--shadow-card);
@@ -97,32 +111,55 @@ body {
   transition: var(--theme-transition);
 }
 
+html.light-mode .modern-card {
+  background: rgba(255, 255, 255, 0.88);
+  border-color: var(--border-subtle);
+}
+
+/* ─── Glass Panel (muted version) ───────────────────────── */
 .glass-panel {
-  background: rgba(19, 47, 76, 0.55);
-  backdrop-filter: blur(12px);
+  background: rgba(22, 22, 22, 0.72);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border: 1px solid var(--border-subtle);
   border-radius: 0.875rem;
   transition: var(--theme-transition);
 }
 
 html.light-mode .glass-panel {
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.82);
   border-color: var(--border-subtle);
 }
 
-/* ─── Section Heading ───────────────────────────────────── */
+/* ─── Right Drawer ───────────────────────────────────────── */
+.drawer-card {
+  background: rgba(13, 13, 13, 0.92);
+  border: 1px solid var(--border-subtle);
+  border-radius: 1.5rem;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(0,255,194,0.04);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+html.light-mode .drawer-card {
+  background: rgba(255,255,255,0.94);
+  border-color: var(--border-subtle);
+}
+
+/* ─── Section Heading ────────────────────────────────────── */
 .section-heading {
   color: var(--accent-primary);
-  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
   font-weight: 700;
-  letter-spacing: 0.28em;
+  letter-spacing: 0.3em;
   text-transform: uppercase;
   margin-bottom: 1rem;
 }
 
-/* ─── CCTV Aesthetics ────────────────────────────────────── */
+/* ─── CCTV Feed ──────────────────────────────────────────── */
 .cctv-feed {
-  filter: grayscale(0.4) contrast(1.1) brightness(0.9);
+  filter: grayscale(0.3) contrast(1.1) brightness(0.9);
   transition: filter 0.3s ease;
 }
 .cctv-feed:hover {
@@ -131,100 +168,53 @@ html.light-mode .glass-panel {
 
 /* ─── Animations ─────────────────────────────────────────── */
 @keyframes pulse-critical {
-  0%   { transform: scale(1);    opacity: 1; }
-  50%  { transform: scale(1.02); opacity: 0.88; box-shadow: 0 0 24px rgba(211, 47, 47, 0.5); }
-  100% { transform: scale(1);    opacity: 1; }
+  0%   { box-shadow: 0 0 0 0 rgba(255, 59, 59, 0.4); }
+  70%  { box-shadow: 0 0 0 10px rgba(255, 59, 59, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 59, 59, 0); }
 }
-.animate-pulse-critical {
-  animation: pulse-critical 1.5s infinite ease-in-out;
-}
+.animate-pulse-critical { animation: pulse-critical 1.8s infinite; }
 
-/* ─── Drawer Card ───────────────────────────────────────── */
-.drawer-card {
-  background: rgba(11, 30, 45, 0.82);
-  border: 1px solid rgba(27, 63, 99, 0.45);
-  border-radius: 1.75rem;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.22);
-  backdrop-filter: blur(16px);
+@keyframes aero-scan {
+  0%   { transform: translateY(-100%); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translateY(200vh); opacity: 0; }
 }
-
-html.light-mode .drawer-card {
-  background: rgba(255, 255, 255, 0.92);
-  border-color: rgba(21, 101, 192, 0.2);
+.aero-scan-line {
+  animation: aero-scan 4s linear infinite;
+  background: linear-gradient(to bottom, transparent, rgba(0,255,194,0.03), transparent);
+  pointer-events: none;
 }
 
 /* ─── Scrollbars ─────────────────────────────────────────── */
-.custom-scrollbar::-webkit-scrollbar        { width: 6px; height: 6px; }
-.custom-scrollbar::-webkit-scrollbar-track  { background: var(--bg-main); }
-.custom-scrollbar::-webkit-scrollbar-thumb  { background: var(--bg-panel-light); border-radius: 9999px; }
+.custom-scrollbar::-webkit-scrollbar        { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track  { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb  { background: rgba(0,255,194,0.2); border-radius: 9999px; }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--accent-primary); }
 
-::-webkit-scrollbar        { width: 5px; height: 5px; }
-::-webkit-scrollbar-track  { background: var(--bg-main); }
-::-webkit-scrollbar-thumb  { background: var(--bg-panel-light); border-radius: 3px; }
+::-webkit-scrollbar        { width: 4px; height: 4px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: rgba(0,255,194,0.18); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--accent-primary); }
 
-/* ─────────────────────────────────────────────────────────────
-   LIGHT MODE: Override all hardcoded dark hex colors remaining
-   in widget/panel components (CameraGrid, SpatialAwareness,
-   RiskMeter, MetricsGrid, RightDrawer, AlertOverlay, etc.)
-───────────────────────────────────────────────────────────── */
+/* ─── Light Mode: override remaining hardcoded dark grays ── */
+html.light-mode [class*="bg-[#071622"]  { background-color: #F7FAF9 !important; }
+html.light-mode [class*="bg-[#0B1E2D"]  { background-color: #EFF5F3 !important; }
+html.light-mode [class*="bg-[#132F4C"]  { background-color: #FFFFFF !important; }
+html.light-mode [class*="bg-[#1B3F63"]  { background-color: #DDE8E4 !important; }
+html.light-mode [class*="bg-[#0D0D0D"]  { background-color: #F0F4F3 !important; }
+html.light-mode [class*="bg-[#161616"]  { background-color: #FFFFFF !important; }
+html.light-mode [class*="bg-[#0B1E2D]/"] { background-color: rgba(230,243,239,0.9) !important; }
+html.light-mode [class*="bg-[#132F4C]/"] { background-color: rgba(255,255,255,0.85) !important; }
+html.light-mode [class*="text-[#E3F2FD"] { color: #0D1F1C !important; }
+html.light-mode [class*="text-[#B0BEC5"] { color: #2E4A45 !important; }
+html.light-mode [class*="text-[#78909C"] { color: #4A6560 !important; }
+html.light-mode [class*="border-[#1B3F63"] { border-color: rgba(0,137,123,0.18) !important; }
 
-/* Backgrounds */
-html.light-mode [class*="bg-[#071622"] { background-color: #F5F8FC !important; }
-html.light-mode [class*="bg-[#0B1E2D"] { background-color: #EFF3F8 !important; }
-html.light-mode [class*="bg-[#132F4C"] { background-color: #FFFFFF !important; }
-html.light-mode [class*="bg-[#1B3F63"] { background-color: #DDE6F0 !important; }
+/* CCTV gradient overlays always stay dark */
+html.light-mode [style*="linear-gradient(to top, rgba(0,0,0"] { background: inherit !important; }
 
-/* With opacity modifiers */
-html.light-mode [class*="bg-[#0B1E2D]/"] { background-color: rgba(230,236,243,0.9) !important; }
-html.light-mode [class*="bg-[#132F4C]/"] { background-color: rgba(255,255,255,0.8) !important; }
-
-/* Text */
-html.light-mode [class*="text-[#E3F2FD"] { color: #0D1B2A !important; }
-html.light-mode [class*="text-[#B0BEC5"] { color: #37474F !important; }
-html.light-mode [class*="text-[#78909C"] { color: #546E7A !important; }
-
-/* Borders */
-html.light-mode [class*="border-[#1B3F63"] { border-color: rgba(21,101,192,0.2) !important; }
-html.light-mode [class*="border-[#1B3F63]/"] { border-color: rgba(21,101,192,0.15) !important; }
-
-/* Specific panel backgrounds referenced in multiple widgets */
-html.light-mode [class*="bg-black/"] {
-  background-color: rgba(255,255,255,0.75) !important;
-  backdrop-filter: blur(8px);
-}
-
-/* Camera feed overlays should stay readable */
-html.light-mode .cctv-feed + * [class*="bg-black/"],
-html.light-mode [style*="aspectRatio"] [class*="bg-black/"] {
-  background-color: rgba(0,0,0,0.55) !important;
-}
-
-/* CCTV overlay text stays white (always on dark video) */
-html.light-mode [style*="aspectRatio"] [class*="text-white"],
-html.light-mode [style*="aspectRatio"] [class*="text-[#E3F2FD"] {
-  color: #ffffff !important;
-}
-
-/* Gradient backgrounds on main body */
+/* Gradient body */
 html.light-mode [style*="radial-gradient"] {
-  background: radial-gradient(circle at 30% 50%, #FFFFFF 0%, #EFF3F8 100%) !important;
+  background: radial-gradient(circle at 30% 50%, #FFFFFF 0%, #F0F4F3 100%) !important;
 }
-
-/* RightDrawer bg */
-html.light-mode [class*="bg-[#132F4C]"][class*="rounded-l"] {
-  background-color: #FFFFFF !important;
-}
-
-/* Inner mini-stat tiles (in RiskMeter) */
-html.light-mode [class*="bg-[#0B1E2D]/60"] {
-  background-color: rgba(235,241,248,0.9) !important;
-}
-
-/* Darker grid bg in SpatialAwareness */
-html.light-mode [style*="linear-gradient(#1B3F63"] {
-  background-image: linear-gradient(rgba(21,101,192,0.08) 1px, transparent 1px),
-                    linear-gradient(90deg, rgba(21,101,192,0.08) 1px, transparent 1px) !important;
-}
-

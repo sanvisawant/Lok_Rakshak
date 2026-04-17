@@ -1,61 +1,97 @@
 import React from 'react';
-import { Activity, Shield, Globe, Cpu, Server } from 'lucide-react';
+import { Globe } from 'lucide-react';
 
-const StatusItem = ({ label, value, status }) => (
-  <div className="flex justify-between items-center p-6 bg-[#0B1E2D]/80 border border-[#1B3F63]/40 rounded-3xl hover:border-[#4FC3F7]/40 transition-all duration-500 shadow-2xl mb-4 group animate-in fade-in slide-in-from-right-4">
-    <div className="flex items-center gap-5">
-      <div className={`w-3 h-3 rounded-full ${status === 'ok' ? 'bg-[#388E3C] shadow-[0_0_15px_#388E3C]' : 'bg-[#F9A825] shadow-[0_0_15px_#F9A825]'} animate-pulse`} />
-      <span className="text-[11px] text-[#B0BEC5] font-bold tracking-[0.2em] group-hover:text-white transition-colors uppercase">{label}</span>
-    </div>
-    <span className="text-[12px] font-mono font-bold text-[#4FC3F7]">{value}</span>
-  </div>
-);
+const C     = '#00FFC2';
+const AMBER = '#FFB300';
+const RED   = '#FF3B3B';
+const GREY  = '#7A7A7A';
+const WHITE = '#FFFFFF';
+const PANEL = 'rgba(18,18,18,0.85)';
+const BORDER = 'rgba(0,255,194,0.10)';
 
-const CommandOverview = () => {
+const STATUS_DOT = {
+  ok:      { color: '#00FFC2', glow: '#00FFC2' },
+  warning: { color: '#FFB300', glow: '#FFB300' },
+  error:   { color: '#FF3B3B', glow: '#FF3B3B' },
+};
+
+const StatusItem = ({ label, value, status }) => {
+  const dot = STATUS_DOT[status] || STATUS_DOT.ok;
   return (
-    <div className="flex flex-col gap-6 drawer-card p-6">
-      <div className="space-y-4">
-        <h3 className="section-heading">SYSTEM INFRASTRUCTURE</h3>
-        
-        <div className="grid grid-cols-1 gap-3">
-          <StatusItem label="CORE_SERVER_A" value="98.2% LOAD" status="ok" />
-          <StatusItem label="DATABASE_CLUSTER" value="12ms LATENCY" status="ok" />
-          <StatusItem label="AI_PROCESSING_UNIT" value="ACTIVE" status="ok" />
-          <StatusItem label="NETWORK_GATEWAY" value="82% CAP" status="warning" />
-        </div>
+    <div className="flex justify-between items-center p-4 rounded-2xl mb-2 transition-all group"
+      style={{
+        backgroundColor: PANEL,
+        border: `1px solid ${BORDER}`,
+      }}
+      onMouseEnter={(e) => e.currentTarget.style.borderColor = 'rgba(0,255,194,0.22)'}
+      onMouseLeave={(e) => e.currentTarget.style.borderColor = BORDER}>
+      <div className="flex items-center gap-3">
+        <div className="w-2 h-2 rounded-full flex-shrink-0"
+          style={{ backgroundColor: dot.color, boxShadow: `0 0 6px ${dot.glow}` }} />
+        <span className="text-[9px] font-mono font-bold tracking-[0.22em] uppercase"
+          style={{ color: GREY }}>
+          {label}
+        </span>
       </div>
-
-      <div className="p-5 bg-[#0B1E2D]/65 border border-[#1B3F63]/50 rounded-[2rem] shadow-inner">
-        <div className="flex items-center gap-3 mb-4">
-          <Globe size={16} className="text-[#4FC3F7]" />
-          <span className="text-[10px] font-bold tracking-[0.2em] text-[#4FC3F7] uppercase">GEO-SPATIAL COVERAGE</span>
-        </div>
-        <div className="aspect-video bg-[#0B1E2D] rounded-[2rem] border border-[#1B3F63]/50 flex items-center justify-center relative overflow-hidden">
-           {/* Simple map placeholder grid */}
-           <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(#4FC3F7 1px, transparent 0)', backgroundSize: '10px 10px' }} />
-           <div className="text-[8px] font-mono text-[#78909C]">SECTORMAP_NORTH_GRID_ACTIVE</div>
-        </div>
-      </div>
-
-      <div className="space-y-3">
-        <h3 className="section-heading">ACTIVE SQUAD LOGS</h3>
-        <div className="bg-[#0B1E2D]/60 border border-[#1B3F63]/50 rounded-[2rem] p-4 space-y-3">
-          <div className="flex gap-2">
-            <span className="text-[#388E3C]">[14:02:11]</span>
-            <span>SQUAD_ALPHA deployed to Gate 4.</span>
-          </div>
-          <div className="flex gap-2">
-            <span className="text-[#388E3C]">[14:05:45]</span>
-            <span>Barrier check complete at North Corridor.</span>
-          </div>
-          <div className="flex gap-2">
-            <span className="text-[#F9A825]">[14:10:22]</span>
-            <span>Rerouting personnel for Sector-7 crowd peak.</span>
-          </div>
-        </div>
-      </div>
+      <span className="text-[10px] font-mono font-black" style={{ color: WHITE }}>
+        {value}
+      </span>
     </div>
   );
 };
+
+const CommandOverview = () => (
+  <div className="flex flex-col gap-6">
+
+    {/* System Infrastructure */}
+    <div>
+      <p className="text-[8px] font-mono font-bold tracking-[0.35em] uppercase mb-3" style={{ color: C }}>
+        SYSTEM INFRASTRUCTURE
+      </p>
+      <StatusItem label="CORE_SERVER_A"      value="98.2% LOAD"  status="ok"      />
+      <StatusItem label="DATABASE_CLUSTER"   value="12ms LATENCY" status="ok"     />
+      <StatusItem label="AI_PROCESSING_UNIT" value="ACTIVE"       status="ok"     />
+      <StatusItem label="NETWORK_GATEWAY"    value="82% CAP"      status="warning" />
+    </div>
+
+    {/* Geo-spatial coverage */}
+    <div className="p-4 rounded-2xl" style={{ backgroundColor: PANEL, border: `1px solid ${BORDER}` }}>
+      <div className="flex items-center gap-2 mb-3">
+        <Globe size={12} style={{ color: C }} />
+        <span className="text-[8px] font-mono font-black tracking-[0.3em] uppercase" style={{ color: C }}>
+          GEO-SPATIAL COVERAGE
+        </span>
+      </div>
+      <div className="aspect-video rounded-xl flex items-center justify-center relative overflow-hidden"
+        style={{ backgroundColor: '#0A0A0A', border: '1px solid rgba(0,255,194,0.07)' }}>
+        <div className="absolute inset-0"
+          style={{ backgroundImage: `radial-gradient(rgba(0,255,194,0.08) 1px, transparent 0)`, backgroundSize: '12px 12px' }} />
+        <span className="text-[8px] font-mono" style={{ color: 'rgba(0,255,194,0.35)' }}>
+          SECTORMAP_NORTH_GRID_ACTIVE
+        </span>
+      </div>
+    </div>
+
+    {/* Squad logs */}
+    <div>
+      <p className="text-[8px] font-mono font-bold tracking-[0.35em] uppercase mb-3" style={{ color: C }}>
+        ACTIVE SQUAD LOGS
+      </p>
+      <div className="rounded-2xl p-4 space-y-2.5"
+        style={{ backgroundColor: PANEL, border: `1px solid ${BORDER}`, fontFamily: 'JetBrains Mono, monospace', fontSize: 9 }}>
+        {[
+          { time: '[14:02:11]', color: C,     msg: 'SQUAD_ALPHA deployed to Gate 4.' },
+          { time: '[14:05:45]', color: C,     msg: 'Barrier check complete at North Corridor.' },
+          { time: '[14:10:22]', color: AMBER, msg: 'Rerouting personnel for Sector-7 crowd peak.' },
+        ].map((log, i) => (
+          <div key={i} className="flex gap-2">
+            <span style={{ color: log.color, flexShrink: 0 }}>{log.time}</span>
+            <span style={{ color: GREY }}>{log.msg}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+);
 
 export default CommandOverview;
