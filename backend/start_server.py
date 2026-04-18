@@ -30,7 +30,7 @@ from app.core.state_machine import SystemStateMachine
 from app.websocket.manager import ConnectionManager
 
 # ── Route imports ──────────────────────────────────────────────────────────────
-from app.api.routes import acoustic, triggers, sdk
+from app.api.routes import acoustic, triggers, sdk, alerts
 
 # ── App setup ─────────────────────────────────────────────────────────────────
 app = FastAPI(title="Lok-Rakshak Control Plane", version="2.0.0")
@@ -53,6 +53,7 @@ if os.path.isdir(static_dir):
 app.include_router(acoustic.router, prefix="/api/acoustic", tags=["Acoustic Node"])
 app.include_router(triggers.router, prefix="/api/triggers", tags=["HITL Controls"])
 app.include_router(sdk.router,      prefix="/api/sdk",      tags=["B2G SDK"])
+app.include_router(alerts.router,   prefix="/api/alerts",   tags=["Alerts & Veritas"])
 
 # ── Initialise singletons & inject into shared state ─────────────────────────
 _vision_engine = VisionEngine()

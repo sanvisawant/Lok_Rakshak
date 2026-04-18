@@ -18,6 +18,15 @@ const AlertOverlay = () => {
     setCriticalAlert(null);
   };
 
+  const handleAction = async () => {
+    try {
+      await fetch(`${BACKEND_URL}/api/triggers/action`, { method: 'POST' });
+      console.log('[HITL] Action (voice) sent to Laptop C');
+    } catch (err) {
+      console.error('[HITL] Action failed:', err);
+    }
+  };
+
   const isCritical = systemStatus === 'CRITICAL';
 
   return (
@@ -57,6 +66,15 @@ const AlertOverlay = () => {
             </div>
 
             <div className="flex flex-col gap-2 items-end shrink-0">
+              {/* HITL Action Button — sends POST to backend /action */}
+              <button
+                onClick={handleAction}
+                className="flex items-center gap-2 px-4 py-2 bg-[#f44336] hover:bg-[#d32f2f] border border-[#ff5252] rounded-lg text-[11px] font-bold text-white tracking-widest transition-all active:scale-95"
+              >
+                <AlertOctagon size={14} />
+                PLAY VOICE WARNING
+              </button>
+
               {/* HITL Dismiss Button — sends POST to backend */}
               <button
                 onClick={handleDismiss}

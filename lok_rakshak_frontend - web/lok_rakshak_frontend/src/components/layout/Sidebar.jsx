@@ -8,7 +8,8 @@ import {
   Monitor,
   LayoutDashboard,
   LogOut,
-  Smartphone
+  Smartphone,
+  AlertOctagon
 } from 'lucide-react';
 import useDashboardStore from '../../store/useDashboardStore';
 import { SDK_QR_URL } from '../../config';
@@ -22,6 +23,7 @@ const Sidebar = () => {
     { icon: ShieldAlert,     label: 'PROTOCOLS', id: 'ndma' },
     { icon: History,         label: 'EVENTS',    id: 'timeline' },
     { icon: Monitor,         label: 'SIGNAGE',   id: 'signage' },
+    { icon: AlertOctagon,    label: 'OVERRIDES', id: 'manual' },
     { icon: Settings,        label: 'CONFIG',    id: 'settings' },
   ];
 

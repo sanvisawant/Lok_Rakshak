@@ -110,8 +110,8 @@ class SystemStateMachine:
             else:
                 elapsed = time.time() - self.red_state_start
                 if elapsed >= self.failover_seconds:
-                    print("⚠️  NO HUMAN RESPONSE IN 15s — AUTONOMOUS ESCALATION TO CRITICAL")
-                    self._enter_critical()
+                    # User requested to disable autonomous escalation to critical
+                    pass
 
         elif predicted_risk_level == "CRITICAL":
             self._enter_critical()
@@ -147,7 +147,7 @@ class SystemStateMachine:
     def _handle_critical(self, sector: str = "Platform 4", density: int = 0):
         """Side-effects for CRITICAL state — each fires only once."""
         if not self._broadcast_fired:
-            trigger_truth_broadcast("panic")
+            # Removed automatic TTS broadcast per user request
             self._broadcast_fired = True
 
         if not self._rpf_sms_fired:

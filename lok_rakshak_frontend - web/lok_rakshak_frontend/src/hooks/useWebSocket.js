@@ -5,7 +5,7 @@
 // Auto-reconnects with 2s backoff if the connection drops.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useEffect, useRef } from 'react';
-import { WS_URL } from '../config';
+import { WS_URL, VIDEO_FEED } from '../config';
 import useDashboardStore from '../store/useDashboardStore';
 
 export function useWebSocket() {
@@ -56,6 +56,30 @@ export function useWebSocket() {
 
         // Generate a live alert for timeline if state is RED or CRITICAL
         if (data.status === 'RED' || data.status === 'CRITICAL') {
+          // 1. Determine emergency dispatch code based on action text
+          const actionText = (data.action || '').toUpperCase();
+          const dispatch_code = actionText.includes('MEDICAL') ? 'MEDICAL_ONLY'
+                              : actionText.includes('SECURITY') || actionText.includes('THEFT') || actionText.includes('WEAPON') ? 'SECURITY_ONLY'
+                              : 'ALL';
+                              
+          // 2. Extract dynamic location from the first camera node
+          const locationName = useDashboardStore.getState().cameras[0]?.name || 'XIE Mumbai Main Gate';
+
+          // 3. Trigger external n8n Emergency Dispatch API
+          fetch('https://mariee.app.n8n.cloud/webhook/emergency-dispatch', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              dispatch_code,
+              location: locationName,
+              live_link: VIDEO_FEED
+            })
+          }).then(res => {
+             if (res.ok) console.log('[N8N DISPATCH] Emergency successfully escalated (200 OK).');
+             else console.warn(`[N8N DISPATCH] Failed with status: ${res.status}`);
+          }).catch(err => console.error('[N8N DISPATCH] Network error:', err));
+
+          // 4. Update internal dashboard UI timeline
           addLiveAlert({
             id:       Date.now(),
             type:     data.status,
